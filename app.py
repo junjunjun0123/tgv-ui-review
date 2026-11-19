@@ -159,29 +159,74 @@ def login_gate() -> None:
     st.markdown(
         """
         <style>
-          .lg-card{background:#fff;border:1px solid #E2DED7;border-radius:12px;
-            padding:26px 28px;max-width:540px;margin:8vh auto 0;box-shadow:0 12px 34px rgba(20,17,14,.08)}
-          .lg-card .mk{background:#E4002B;color:#fff;font-weight:800;font-size:11px;
-            padding:4px 7px;border-radius:5px;letter-spacing:.4px}
-          .lg-card h2{font-size:24px;letter-spacing:-.5px;margin:14px 0 6px}
-          .lg-card p{font-size:12.5px;color:#6E675C;line-height:1.6;margin-bottom:18px}
-          .lg-card ul{font-size:12px;color:#3B352C;line-height:1.8;padding-left:18px;margin-top:14px}
+          [data-testid="stHeader"],
+          [data-testid="stSidebar"],
+          [data-testid="stMainMenu"] { display:none !important; }
+          .block-container{padding:0 !important;max-width:100% !important}
+          [data-testid="stAppViewContainer"]{background:#F2F2F7 !important}
+
+          .lg-wrap{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",
+            Roboto,Helvetica,Arial,sans-serif;color:#1C1C1E}
+          .lg-hero{background:#E4002B;color:#fff;padding:42px 26px 86px;
+            border-radius:0 0 30px 30px;box-shadow:0 12px 34px rgba(228,0,43,.22)}
+          .lg-hero .bd{display:inline-flex;align-items:center;gap:8px;font-size:11px;
+            font-weight:700;letter-spacing:1.4px;background:rgba(255,255,255,.16);
+            border:1px solid rgba(255,255,255,.28);border-radius:20px;padding:5px 11px}
+          .lg-hero .bd i{width:7px;height:7px;border-radius:50%;background:#fff;display:block}
+          .lg-hero h1{font-size:34px;line-height:1.08;letter-spacing:-1px;
+            margin:18px 0 8px;font-weight:700}
+          .lg-hero p{font-size:13.5px;line-height:1.55;color:rgba(255,255,255,.88);
+            margin:0;max-width:430px}
+
+          [data-testid="stForm"]{max-width:560px;margin:-58px auto 0;background:#fff;
+            border:1px solid rgba(60,60,67,.08);border-radius:20px;padding:18px 20px 20px;
+            box-shadow:0 14px 40px rgba(0,0,0,.12);position:relative;z-index:2}
+          [data-testid="stForm"] [data-testid="stVerticalBlock"]{gap:0 !important}
+          [data-testid="stForm"] [data-testid="stVerticalBlock"] > div{
+            padding:10px 2px;border-bottom:1px solid #E5E5EA}
+          [data-testid="stForm"] [data-testid="stVerticalBlock"] > div:last-child{
+            border-bottom:none}
+          [data-testid="stTextInput"] label,
+          [data-testid="stSelectbox"] label{font-size:11px !important;font-weight:600 !important;
+            color:#6E6E73 !important;letter-spacing:.2px !important;padding-bottom:2px !important}
+          [data-testid="stTextInput"] input{background:transparent !important;border:none !important;
+            box-shadow:none !important;color:#1C1C1E !important;font-size:15px !important;
+            padding:2px 0 !important;min-height:28px !important}
+          [data-testid="stTextInputRootElement"]{background:transparent !important;
+            border:none !important;box-shadow:none !important}
+          [data-testid="stSelectbox"] > div[data-baseweb="select"] > div{
+            background:transparent !important;border:none !important;box-shadow:none !important;
+            color:#1C1C1E !important;font-size:15px !important;min-height:28px !important;
+            padding:0 !important}
+          [data-testid="stSelectbox"] svg{color:#E4002B !important}
+          [data-testid="stFormSubmitButton"] button{width:100% !important;height:48px !important;
+            background:#E4002B !important;color:#fff !important;border-radius:14px !important;
+            font-size:15px !important;font-weight:600 !important;border:none !important;
+            box-shadow:0 8px 20px rgba(228,0,43,.28) !important;margin-top:14px !important}
+          [data-testid="stAlert"]{border-radius:14px !important;margin:14px auto 0 !important;
+            max-width:560px !important}
+          .lg-foot{max-width:560px;margin:16px auto 24px;text-align:center;color:#6E6E73;
+            font-size:11.5px;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,
+            "Segoe UI",sans-serif}
+          .lg-foot b{color:#E4002B}
+          @media(max-width:620px){
+            .lg-hero{padding:34px 20px 78px;border-radius:0 0 24px 24px}
+            .lg-hero h1{font-size:29px}
+            [data-testid="stForm"]{margin:-52px 14px 0;padding:16px}
+          }
         </style>
         """,
         unsafe_allow_html=True,
     )
     st.markdown(
         """
-        <div class="lg-card">
-          <span class="mk">TGV</span>
-          <h2>Sign in first. Then make the film.</h2>
-          <p>One creator raises the Vista titles. Everyone else signs in and works from the
-             same slate — no duplicate title requests, no guessing which version to rate.</p>
-          <ul>
-            <li><b>Creator</b> — publishes film titles for everyone.</li>
-            <li><b>Programmer</b> — rates and schedules the created titles.</li>
-            <li><b>Viewer</b> — reads the ratings and the plan.</li>
-          </ul>
+        <div class="lg-wrap">
+          <div class="lg-hero">
+            <span class="bd"><i></i>TGV CINEMAS</span>
+            <h1>Sign in.</h1>
+            <p>One Creator raises the Vista titles. Everyone else works from the same slate —
+               no duplicate requests.</p>
+          </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -192,6 +237,12 @@ def login_gate() -> None:
         password = st.text_input("Password", type="password")
         role = st.selectbox("Role", ["Creator", "Programmer", "Viewer"])
         go = st.form_submit_button("Sign in →", type="primary")
+
+    st.markdown(
+        '<div class="lg-foot"><b>Creator</b> publishes · <b>Programmer</b> rates &amp; '
+        "schedules · <b>Viewer</b> reads the plan</div>",
+        unsafe_allow_html=True,
+    )
 
     try:
         extra = st.secrets.get("APP_PASSWORD")
@@ -271,7 +322,7 @@ def create_film_panel(user: dict, titles: list[dict]) -> None:
         )
         return
 
-    st.markdown("#### Publish a Vista title · shared with everyone")
+    st.markdown("#### Native form · publish a Vista title")
     with st.form("create_film", clear_on_submit=True):
         film = st.text_input("Film name", value="Doomsday")
         c1, c2 = st.columns(2)
@@ -500,6 +551,17 @@ with title_r:
 if not (VIEWS / key).exists():
     st.error(f"`{VIEWS / key}` is missing. The `static/` folder must sit next to `app.py`.")
 elif key == "5-createfilm.html":
+    st.markdown(
+        '<div class="tgv-card" style="border-left:4px solid #E4002B;margin-bottom:10px">'
+        "<b>Designed prototype</b> — the original Create Film layout is embedded below. "
+        "The native Streamlit form after it is the fallback that writes to the shared slate."
+        "</div>",
+        unsafe_allow_html=True,
+    )
+    film_html = (VIEWS / key).read_text(encoding="utf-8")
+    components.html(inject_shared(film_html, user, titles), height=960, scrolling=True)
+
+    st.markdown("### Streamlit form fallback · shared with everyone")
     create_film_panel(user, titles)
     if not titles:
         st.markdown(
