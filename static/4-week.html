@@ -1,0 +1,3172 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TGV Programming — Week Planner</title>
+<style>
+:root{
+  --bg:#FAFAF9; --panel:#FFFFFF; --line:#E8E6E2; --line2:#F2F0EC;
+  --ink:#16150F; --ink2:#4B4740; --dim:#8B847A; --dim2:#AFA89E;
+  --red:#E4002B; --red-lt:#FEF2F4; --red-dk:#B00021;
+  --green:#12734A; --green-lt:#EDF7F1;
+  --amber:#96600A; --amber-lt:#FCF5E8;
+  --blue:#1F5FA8; --blue-lt:#EEF4FB;
+  --sans:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+  --mono:'Cascadia Mono','Consolas',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select{font-family:inherit;font-size:inherit;color:inherit}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#D9D5CE;border-radius:5px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+.hidden{display:none !important}
+
+/* ============ LOGIN ============ */
+.login{position:fixed;inset:0;display:grid;grid-template-columns:minmax(380px,44%) 1fr;z-index:300;background:#fff}
+@media(max-width:860px){.login{grid-template-columns:1fr}.login .lpanel{display:none}}
+.login .lpanel{background:linear-gradient(155deg,#171310 0%,#241A16 46%,#3A1116 100%);position:relative;
+  display:flex;flex-direction:column;padding:44px 48px;color:#fff;overflow:hidden}
+.login .lpanel::after{content:'';position:absolute;width:520px;height:520px;border-radius:50%;
+  background:radial-gradient(circle,rgba(228,0,43,.34),transparent 66%);right:-190px;bottom:-190px}
+.login .lpanel::before{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(115deg,rgba(255,255,255,.028) 0 1px,transparent 1px 9px);pointer-events:none}
+.lg-brand{display:flex;align-items:center;gap:11px;position:relative;z-index:2}
+.lg-brand .mk{width:38px;height:38px;border-radius:9px;background:var(--red);display:grid;place-items:center;
+  font-size:12px;font-weight:800;letter-spacing:.2px;box-shadow:0 6px 18px -6px rgba(228,0,43,.9)}
+.lg-brand b{font-size:15px;font-weight:650;letter-spacing:-.2px;display:block}
+.lg-brand span{font-size:10.5px;color:rgba(255,255,255,.5);letter-spacing:.4px;text-transform:uppercase;font-weight:600}
+.lg-mid{margin-top:auto;position:relative;z-index:2;padding-bottom:8px}
+.lg-mid h1{font-size:33px;line-height:1.14;font-weight:700;letter-spacing:-1.1px;max-width:400px}
+.lg-mid h1 em{font-style:normal;color:#FF5570}
+.lg-mid p{font-size:12.5px;line-height:1.65;color:rgba(255,255,255,.58);margin-top:16px;max-width:370px}
+.lg-flow{display:flex;flex-direction:column;gap:9px;margin-top:26px}
+.lg-flow div{display:flex;align-items:center;gap:10px;font-size:11.5px;color:rgba(255,255,255,.66)}
+.lg-flow i{width:19px;height:19px;border-radius:5px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);
+  display:grid;place-items:center;font-style:normal;font-size:9.5px;font-weight:700;color:rgba(255,255,255,.75);flex-shrink:0}
+.lg-foot{margin-top:auto;position:relative;z-index:2;font-size:10px;color:rgba(255,255,255,.34);letter-spacing:.3px;padding-top:26px}
+
+.login .rpanel{display:flex;align-items:center;justify-content:center;padding:36px 32px;background:#fff}
+.lgbox{width:100%;max-width:352px}
+.lgbox .eyebrow{font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--dim2)}
+.lgbox h2{font-size:23px;font-weight:700;letter-spacing:-.6px;margin:7px 0 5px}
+.lgbox .sub{font-size:12px;color:var(--dim);margin-bottom:26px;line-height:1.55}
+.fld2{margin-bottom:13px}
+.fld2 label{display:block;font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink2);margin-bottom:6px}
+.fld2 input,.fld2 select{width:100%;height:40px;border:1px solid var(--line);border-radius:8px;padding:0 12px;
+  font-size:13px;background:#fff;outline:none;transition:.14s}
+.fld2 input:focus,.fld2 select:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(22,21,15,.07)}
+.fld2 input.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(228,0,43,.1)}
+.pwwrap{position:relative}
+.pwwrap .eye{position:absolute;right:6px;top:6px;width:28px;height:28px;border-radius:6px;color:var(--dim);
+  display:grid;place-items:center;font-size:13px}
+.pwwrap .eye:hover{background:var(--line2);color:var(--ink)}
+.lgrow{display:flex;align-items:center;justify-content:space-between;margin:4px 0 20px}
+.chk{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink2);cursor:pointer;user-select:none}
+.chk input{width:14px;height:14px;accent-color:var(--red);cursor:pointer;flex-shrink:0}
+.lgrow a{font-size:11.5px;color:var(--red);font-weight:600;text-decoration:none}
+.lgrow a:hover{text-decoration:underline}
+.btn-login{width:100%;height:42px;border-radius:9px;background:var(--red);color:#fff;font-size:13px;font-weight:650;
+  letter-spacing:.1px;transition:.15s;box-shadow:0 2px 8px -2px rgba(228,0,43,.5)}
+.btn-login:hover{background:var(--red-dk)}
+.btn-login:active{transform:translateY(1px)}
+.lgmsg{font-size:11.5px;color:var(--red);margin-bottom:12px;display:none;background:var(--red-lt);
+  border:1px solid #F7D3D9;border-radius:7px;padding:8px 11px}
+.lgmsg.on{display:block}
+.lgdemo{margin-top:20px;padding:11px 13px;background:var(--bg);border-radius:8px;font-size:10.5px;color:var(--dim);
+  line-height:1.6;border:1px dashed var(--line)}
+.lgdemo b{color:var(--ink2);font-weight:650}
+.lglegal{margin-top:22px;font-size:10px;color:var(--dim2);text-align:center;line-height:1.6}
+
+/* ============ TOP BAR ============ */
+.top{position:sticky;top:0;z-index:60;height:54px;background:#fff;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:12px;padding:0 18px}
+.brand{display:flex;align-items:center;gap:9px}
+.brand .mk{width:26px;height:26px;border-radius:6px;background:var(--red);color:#fff;display:grid;place-items:center;
+  font-size:9px;font-weight:800;letter-spacing:.2px}
+.brand b{font-size:12.5px;font-weight:650;letter-spacing:-.2px;display:block;line-height:1.2}
+.brand span{font-size:9.5px;color:var(--dim);font-weight:500;letter-spacing:.2px}
+.top .sp{flex:1}
+.sel{height:31px;border:1px solid var(--line);border-radius:7px;background:#fff;padding:0 9px;font-size:11.5px;
+  color:var(--ink2);outline:none;transition:.12s;max-width:210px}
+.sel:hover{border-color:#D6D2CB}
+.sel:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(22,21,15,.06)}
+.btn{height:31px;padding:0 13px;border-radius:7px;font-size:11.5px;font-weight:600;display:inline-flex;
+  align-items:center;gap:6px;transition:.14s;white-space:nowrap}
+.btn.red{background:var(--red);color:#fff;box-shadow:0 1px 2px rgba(228,0,43,.3)}
+.btn.red:hover{background:#C40025}
+.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink2)}
+.btn.ghost:hover{background:var(--line2);color:var(--ink)}
+.btn.dark{background:var(--ink);color:#fff}
+.btn.dark:hover{background:#000}
+.btn.sm{height:26px;padding:0 9px;font-size:10.5px;border-radius:6px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.rating-quick{background:var(--red-lt);border-color:#F7D3D9;color:var(--red-dk)}
+.btn.rating-quick:hover{background:#FBE1E6;color:var(--red-dk)}
+.btn.rating-quick.active{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 1px 2px rgba(228,0,43,.3)}
+.rating-banner{background:var(--red-lt)!important;border-color:#F7D3D9!important;color:#8A1028!important}
+.rating-banner b{color:var(--red-dk)}
+.avatar{display:flex;align-items:center;gap:8px;padding:3px 8px 3px 3px;border-radius:20px;transition:.13s}
+.avatar:hover{background:var(--line2)}
+.avatar .ini{width:27px;height:27px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;
+  font-size:10px;font-weight:700;letter-spacing:.2px}
+.avatar .who{text-align:left;line-height:1.15}
+.avatar .who b{display:block;font-size:11px;font-weight:650}
+.avatar .who span{font-size:9px;color:var(--dim)}
+.avmenu{position:absolute;top:50px;right:16px;z-index:200;background:#fff;border:1px solid var(--line);
+  border-radius:10px;box-shadow:0 16px 40px -14px rgba(0,0,0,.3);width:224px;padding:6px;display:none}
+.avmenu.on{display:block}
+.avmenu .who{padding:9px 10px;border-bottom:1px solid var(--line2);margin-bottom:5px}
+.avmenu .who b{display:block;font-size:12px;font-weight:650}
+.avmenu .who span{font-size:10.5px;color:var(--dim)}
+.avmenu button{width:100%;text-align:left;padding:7px 10px;border-radius:6px;font-size:11.5px;color:var(--ink2);
+  display:flex;align-items:center;gap:8px}
+.avmenu button:hover{background:var(--line2);color:var(--ink)}
+
+/* ============ STEPPER ============ */
+.stepper{background:#fff;border-bottom:1px solid var(--line);padding:0 18px;display:flex;align-items:stretch;gap:0;
+  position:sticky;top:54px;z-index:55;overflow-x:auto}
+.step{display:flex;align-items:center;gap:9px;padding:11px 15px 11px 0;position:relative;flex-shrink:0;
+  color:var(--dim);transition:.14s}
+.step:not(:last-child)::after{content:'';width:15px;height:1px;background:var(--line);margin:0 4px 0 11px}
+.step .n{width:20px;height:20px;border-radius:50%;border:1.5px solid #DCD7CF;display:grid;place-items:center;
+  font-size:9.5px;font-weight:700;color:var(--dim);flex-shrink:0;transition:.14s}
+.step .tx b{display:block;font-size:11.5px;font-weight:650;letter-spacing:-.1px;line-height:1.25}
+.step .tx span{font-size:9.5px;color:var(--dim2)}
+.step:hover{color:var(--ink2)}
+.step.done{color:var(--ink2)}
+.step.done .n{background:var(--green-lt);border-color:transparent;color:var(--green)}
+.step.on{color:var(--ink)}
+.step.on .n{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 2px 7px -2px rgba(228,0,43,.7)}
+.step.on .tx span{color:var(--red)}
+
+/* ============ STAGE ============ */
+.stage{padding:20px 22px 90px;max-width:1440px}
+.pghd{display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.pghd .l{flex:1;min-width:260px}
+.pghd h1{font-size:19px;font-weight:700;letter-spacing:-.45px}
+.pghd p{font-size:12px;color:var(--dim);margin-top:3px;max-width:640px;line-height:1.55}
+.pghd .r{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:10px}
+.card .hd{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px}
+.card .hd h3{font-size:12.5px;font-weight:700;letter-spacing:-.15px;flex:1}
+.card .hd .hint{font-size:10.5px;color:var(--dim)}
+.card .bd{padding:14px 15px}
+.lbl{font-size:9.5px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--dim2);margin-bottom:8px}
+
+/* film picker */
+.presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.preset{padding:6px 11px;border-radius:20px;border:1px solid var(--line);background:#fff;font-size:11px;
+  font-weight:600;color:var(--ink2);transition:.13s}
+.preset:hover{border-color:#CFCAC2;background:var(--line2)}
+.filmgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:9px}
+.fcard{background:#fff;border:1px solid var(--line);border-radius:9px;padding:10px;display:flex;gap:10px;
+  text-align:left;transition:.13s;position:relative}
+.fcard:hover{border-color:#CFCAC2;box-shadow:0 2px 10px -4px rgba(0,0,0,.12)}
+.fcard.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.fcard .p{width:38px;height:54px;border-radius:4px;flex-shrink:0;display:flex;align-items:flex-end;padding:4px;
+  position:relative;overflow:hidden}
+.fcard .p span{position:relative;z-index:2;color:#fff;font-size:6.5px;font-weight:800;line-height:1.05;letter-spacing:.1px}
+.fcard .p::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.55),transparent 62%)}
+.fcard .t{min-width:0;flex:1}
+.fcard .t b{display:block;font-size:11.5px;font-weight:700;line-height:1.2;letter-spacing:-.1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fcard .t .g{font-size:9.5px;color:var(--dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fcard .t .m{display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap}
+.fcard .t .m .ix{font-size:10px;font-weight:700;font-variant-numeric:tabular-nums}
+.fcard .tick{position:absolute;top:7px;right:7px;width:15px;height:15px;border-radius:50%;border:1.5px solid #DCD7CF;
+  display:grid;place-items:center;font-size:9px;color:transparent;background:#fff}
+.fcard.on .tick{background:var(--ink);border-color:var(--ink);color:#fff}
+.fcard .num{position:absolute;bottom:7px;right:8px;font-size:9px;font-weight:800;color:var(--red);
+  font-variant-numeric:tabular-nums}
+
+/* lineup strip */
+.strip{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 8px 5px 9px;border-radius:7px;
+  background:#fff;border:1px solid var(--line);font-size:11px;font-weight:600}
+.chip i{width:7px;height:7px;border-radius:2px;flex-shrink:0}
+.chip .x{color:var(--dim2);font-size:12px;line-height:1;padding:0 1px}
+.chip .x:hover{color:var(--red)}
+.chip .o{font-size:9.5px;color:var(--dim);font-weight:600;font-variant-numeric:tabular-nums}
+
+/* forecast table */
+.tblwrap{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.tblscroll{overflow-x:auto}
+table.g{width:100%;border-collapse:collapse;font-size:11.5px;min-width:880px}
+table.g thead th{background:#F7F6F4;font-size:9.5px;font-weight:700;letter-spacing:.55px;text-transform:uppercase;
+  color:var(--dim);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;
+  position:sticky;top:0;z-index:2}
+table.g thead th.n{text-align:right}
+table.g tbody td{padding:7px 10px;border-bottom:1px solid var(--line2);white-space:nowrap;
+  font-variant-numeric:tabular-nums;vertical-align:middle}
+table.g tbody tr{cursor:pointer;transition:background .1s}
+table.g tbody tr:hover{background:#FAFAF8}
+table.g tbody tr.sel{background:var(--red-lt)}
+table.g tbody tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--red)}
+table.g td.n{text-align:right}
+table.g td.f{font-weight:650;color:var(--ink);max-width:230px;overflow:hidden;text-overflow:ellipsis}
+table.g tr.tot td{background:#F5F4F1;font-weight:750;font-size:12px;border-bottom:0}
+.sw2{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:0}
+.pill{font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;letter-spacing:.2px;display:inline-block}
+.pill.strong{background:var(--green-lt);color:var(--green)}
+.pill.solid{background:var(--blue-lt);color:var(--blue)}
+.pill.watch{background:var(--amber-lt);color:var(--amber)}
+.pill.weak{background:var(--red-lt);color:var(--red)}
+.mini{height:22px;padding:0 7px;border-radius:5px;font-size:10px;font-weight:600;border:1px solid var(--line);
+  background:#fff;color:var(--ink2)}
+.mini:hover{background:var(--line2)}
+.oc.hi{color:var(--red);font-weight:650}
+.oc.md{color:var(--green);font-weight:650}
+.oc.lo{color:var(--dim)}
+
+/* scale control */
+.seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:8px;padding:2px}
+.seg button{padding:5px 10px;border-radius:6px;font-size:10.5px;font-weight:650;color:var(--dim);transition:.13s}
+.seg button:hover{color:var(--ink2)}
+.seg button.on{background:var(--ink);color:#fff}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}
+@media(max-width:820px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:9px;padding:11px 13px}
+.kpi .k{font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim2)}
+.kpi .v{font-size:22px;font-weight:750;letter-spacing:-.9px;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:10.5px;font-weight:600;color:var(--dim);letter-spacing:0;margin-left:2px}
+.kpi .f{font-size:9.5px;color:var(--dim);margin-top:1px}
+
+/* location */
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px}
+@media(max-width:900px){.modes{grid-template-columns:1fr}}
+.mode{background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px 14px;text-align:left;
+  transition:.14s;position:relative;display:block}
+.mode:hover{border-color:#CFCAC2}
+.mode.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.mode .ic{width:26px;height:26px;border-radius:7px;background:var(--bg);display:grid;place-items:center;
+  font-size:13px;margin-bottom:8px}
+.mode.on .ic{background:var(--red-lt)}
+.mode b{display:block;font-size:12px;font-weight:700;letter-spacing:-.1px}
+.mode p{font-size:10.5px;color:var(--dim);line-height:1.5;margin-top:3px}
+.mode .radio{position:absolute;top:12px;right:12px;width:15px;height:15px;border-radius:50%;border:1.5px solid #DCD7CF}
+.mode.on .radio{border-color:var(--ink);background:var(--ink);box-shadow:inset 0 0 0 3px #fff}
+
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.citem{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;
+  background:#fff;transition:.13s;text-align:left}
+.citem:hover{border-color:#CFCAC2;background:#FCFBFA}
+.citem.on{border-color:var(--ink);background:#FCFBFA}
+.citem .cb{width:15px;height:15px;border-radius:4px;border:1.5px solid #DCD7CF;display:grid;place-items:center;
+  font-size:9px;color:transparent;flex-shrink:0;background:#fff}
+.citem.on .cb{background:var(--ink);border-color:var(--ink);color:#fff}
+.citem .nm{flex:1;min-width:0}
+.citem .nm b{display:block;font-size:11.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.citem .nm span{font-size:9.5px;color:var(--dim)}
+.citem .adm{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink2)}
+.citem .adm em{display:block;font-style:normal;font-size:8.5px;color:var(--dim2);font-weight:600;letter-spacing:.3px}
+
+/* schedule */
+.schedbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.days{display:flex;gap:3px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:3px}
+.day{padding:5px 10px;border-radius:6px;font-size:10.5px;font-weight:650;color:var(--dim);transition:.13s;text-align:center}
+.day b{display:block;font-size:11px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.day:hover{background:var(--line2)}
+.day.on{background:var(--ink);color:#fff}
+.day.on b{color:#fff}
+
+/* timeline */
+.tl{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.tlhead{display:flex;border-bottom:1px solid var(--line);background:#F7F6F4;height:25px}
+.tlhead .lbl2{width:126px;flex-shrink:0;border-right:1px solid var(--line);display:flex;align-items:center;
+  padding:0 10px;font-size:8.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--dim2)}
+.tlhead .axis{flex:1;position:relative}
+.tlhead .axis span{position:absolute;top:5px;font-size:9px;color:var(--dim);transform:translateX(-50%);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.tlhead .axis span.nd{color:var(--red);font-weight:700}
+.tlbody{position:relative}
+.tlrow{display:flex;height:37px;border-bottom:1px solid var(--line2)}
+.tlrow:last-child{border-bottom:0}
+.tlrow .lbl2{width:126px;flex-shrink:0;border-right:1px solid var(--line);padding:0 10px;display:flex;
+  flex-direction:column;justify-content:center;background:#FCFBFA}
+.tlrow .lbl2 b{font-size:10px;font-weight:650;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tlrow .lbl2 span{font-size:8.5px;color:var(--dim2)}
+.tlrow .track{flex:1;position:relative}
+.blk{position:absolute;top:4px;bottom:4px;border-radius:3px;padding:2px 5px;overflow:hidden;cursor:pointer;
+  border-left:3px solid;transition:filter .12s}
+.blk b{display:block;font-size:9px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  line-height:1.25;letter-spacing:-.05px}
+.blk span{font-size:8px;opacity:.72;font-variant-numeric:tabular-nums;line-height:1.2}
+.blk:hover{filter:brightness(.94);box-shadow:0 0 0 1.5px rgba(20,18,14,.5);z-index:5}
+.blk.filler{opacity:.5}
+.blk.closed{background:repeating-linear-gradient(45deg,#F0EEEB 0 4px,#E7E4DF 4px 8px);border-left-color:#C9C3B9}
+
+.legend{display:flex;gap:12px;flex-wrap:wrap;padding:9px 14px;border-top:1px solid var(--line);background:#FBFAF8;
+  font-size:9.5px;color:var(--dim);align-items:center}
+.legend i{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:-1px}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(22,21,15,.22);opacity:0;pointer-events:none;transition:.18s;z-index:80}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:404px;max-width:100vw;background:#fff;z-index:90;
+  transform:translateX(100%);transition:transform .22s cubic-bezier(.2,.8,.3,1);
+  display:flex;flex-direction:column;box-shadow:-10px 0 40px -16px rgba(0,0,0,.28)}
+.drawer.on{transform:translateX(0)}
+.drawer .hd{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px}
+.drawer .hd .t{flex:1;min-width:0}
+.drawer .hd h3{font-size:13px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drawer .hd .s{font-size:10px;color:var(--dim)}
+.drawer .hd .x{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;color:var(--dim);font-size:15px}
+.drawer .hd .x:hover{background:var(--line2);color:var(--ink)}
+.drawer .bd{padding:14px 16px;overflow-y:auto;flex:1}
+.drawer .ft{padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:7px}
+.drawer .ft .btn{flex:1;justify-content:center}
+.btn.del{background:var(--red-lt);color:var(--red)}
+.btn.del:hover{background:#FBDDE3}
+
+.sect{border-top:1px solid var(--line2);padding-top:13px;margin-top:13px}
+.sect:first-child{border-top:0;padding-top:0;margin-top:0}
+.dim{margin-bottom:9px}
+.dim .r{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+.dim .r span{font-size:11px;font-weight:550;color:var(--ink2)}
+.dim .r b{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+/* D3 - 5-star score */
+.starrow{display:flex;align-items:baseline;gap:7px;margin:2px 0 9px}
+.starrow .sf{font-size:28px;font-weight:750;letter-spacing:-1.2px;line-height:1;font-variant-numeric:tabular-nums}
+.starrow .so{font-size:13px;color:var(--dim);font-weight:600}
+.stars{display:inline-flex;gap:2px;user-select:none;-webkit-user-select:none}
+.star{position:relative;width:30px;height:30px;font-size:29px;line-height:30px;text-align:center}
+.star .glyph{color:#D9D2C7;transition:color .12s}
+.star.on .glyph{color:var(--red)}
+.star.half .glyph{background:linear-gradient(90deg,var(--red) 50%,#D9D2C7 50%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.star .hit{position:absolute;top:0;height:100%;width:50%;cursor:pointer;z-index:2}
+.star .hit.l{left:0}
+.star .hit.r{right:0}
+.stars.locked{pointer-events:none;opacity:.5}
+.fcard .t .m .ix{color:var(--red)}
+/* D3 - whole-row vertical drag in Table view */
+table.g tbody tr[data-id]{cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none}
+table.g tbody tr[data-id].drag-on{background:#FBEAED !important;box-shadow:0 8px 22px -8px rgba(0,0,0,.4);position:relative;z-index:6}
+table.g tbody tr[data-id] td:nth-child(3) b{color:var(--red)}
+/* switch with the session above/below */
+.swp{display:inline-flex;gap:1px;margin-left:7px;vertical-align:middle;opacity:.4;transition:opacity .12s}
+tr:hover .swp{opacity:1}
+.swp button{width:17px;height:17px;line-height:14px;font-size:9px;border:1px solid var(--line);
+  border-radius:3px;background:#fff;color:var(--dim);cursor:pointer;padding:0;text-align:center}
+.swp button:hover{background:var(--red);border-color:var(--red);color:#fff}
+table.g tbody tr[data-id].drag-on{opacity:.82}
+table.g tbody tr[data-id].drop-target{outline:2px solid #7C4DBE;outline-offset:-2px;
+  background:#F3EDFB !important;position:relative;z-index:8}
+.drag-tip{position:fixed;z-index:200;background:#201C17;color:#fff;font-size:11px;font-weight:600;
+  padding:6px 10px;border-radius:6px;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.28);white-space:nowrap}
+/* D3 - everyone's ratings */
+.rvbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;
+  background:#fff;border:1px solid var(--line);border-radius:9px}
+.rvbar .lead{font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim2)}
+.rvbar .who{font-size:11px;color:var(--ink2);font-weight:600}
+.rvbar .tail{font-size:10.5px;color:var(--dim);margin-left:auto}
+.rvbar .seg button{padding:4px 9px;font-size:10px}
+.rv-prog-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:16px}
+@media(max-width:1000px){.rv-prog-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.rv-prog-grid{grid-template-columns:1fr}}
+.rv-prog{background:#fff;border:1px solid var(--line);border-radius:9px;padding:11px 12px}
+.rv-prog-hd{display:flex;align-items:center;gap:8px}
+.rv-av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  font-size:10px;font-weight:800;letter-spacing:.2px;flex-shrink:0}
+.rv-prog-hd .nm{min-width:0;flex:1}
+.rv-prog-hd .nm b{display:block;font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rv-prog-hd .nm span{display:block;font-size:9.5px;color:var(--dim)}
+.rv-prog-hd .cnt{font-size:10px;font-weight:700;color:var(--dim);font-variant-numeric:tabular-nums}
+.rv-avg{display:flex;align-items:baseline;gap:5px;margin-top:9px;font-variant-numeric:tabular-nums}
+.rv-avg b{font-size:24px;font-weight:750;letter-spacing:-.8px}
+.rv-avg span{font-size:10.5px;font-weight:600;color:var(--dim)}
+.rv-avg em{font-style:normal;font-size:9.5px;font-weight:700;margin-left:auto}
+.rv-sparks{display:flex;align-items:flex-end;gap:2px;height:28px;margin:8px 0 9px}
+.rv-spark{flex:1;height:var(--h);min-height:3px;border-radius:2px 2px 0 0;background:var(--c);opacity:.72}
+.rv-pick{display:flex;align-items:center;gap:7px;padding:4px 0;border-top:1px solid var(--line2);font-size:9.5px}
+.rv-pick i{width:6px;height:6px;border-radius:2px;flex-shrink:0}
+.rv-pick div{flex:1;min-width:0}
+.rv-pick span{display:block;color:var(--dim2);font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+.rv-pick b{display:block;font-size:10px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rv-pick em{font-style:normal;font-weight:700;color:var(--ink2);white-space:nowrap}
+.rv-sec-t{display:flex;align-items:baseline;gap:9px;margin:17px 0 8px;font-size:11.5px;font-weight:700}
+.rv-sec-t span{font-size:10px;font-weight:500;color:var(--dim)}
+table.g.rvheat{min-width:1040px}
+.rvheat tbody tr{cursor:default}
+.rvheat th.p,.rvheat td.p{text-align:center;min-width:96px}
+.rvheat td.p{cursor:pointer}
+.rvheat td.p:hover{background:var(--red-lt) !important}
+.rvheat td.p.hi{background:#F1F9F5}
+.rvheat td.p.good{background:#F2F7FC}
+.rvheat td.p.mid{background:#FFF9ED}
+.rvheat td.p.lo{background:#FFF3F5}
+.rv-rank{display:inline-block;width:17px;color:var(--dim2);font-size:9.5px;font-weight:700}
+.rv-cell{display:flex;flex-direction:column;align-items:center;gap:4px}
+.rv-cell b{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+.rv-meter{display:block;width:58px;height:4px;border-radius:3px;background:#E8E6E2;overflow:hidden}
+.rv-meter i{display:block;height:100%;border-radius:3px}
+.rv-cons b{font-size:12px;font-weight:750}
+.rv-cons span{font-size:9px;color:var(--dim);margin-left:2px}
+.rv-agree{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px}
+.rv-agree.strong{background:var(--green-lt);color:var(--green)}
+.rv-agree.mixed{background:var(--amber-lt);color:var(--amber)}
+.rv-agree.split{background:var(--red-lt);color:var(--red)}
+.rv-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:9.5px;color:var(--dim)}
+.rv-legend i{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:-1px}
+.rv-debate-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+@media(max-width:900px){.rv-debate-grid{grid-template-columns:1fr}}
+.rv-debate{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:10px}
+.rv-poster{width:28px;height:40px;border-radius:3px;flex-shrink:0}
+.rv-debate-main{flex:1;min-width:0}
+.rv-debate-main .t{font-size:10.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rv-debate-main .s{font-size:9.5px;color:var(--dim);margin-top:1px}
+.rv-scale{height:6px;border-radius:4px;background:var(--line2);position:relative;margin:10px 0 8px}
+.rv-dot{position:absolute;top:-3px;width:12px;height:12px;border-radius:50%;border:2px solid #fff;
+  transform:translateX(-50%);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.rv-hilo{display:flex;justify-content:space-between;gap:8px;font-size:9px;font-weight:700}
+.rv-hilo .hi{color:var(--green)}
+.rv-hilo .lo{color:var(--red)}
+.rv-consensus-note{margin-top:9px;padding:7px 9px;border-radius:6px;background:var(--bg);
+  font-size:10px;color:var(--ink2);line-height:1.45}
+.rv-help{font-size:10px;line-height:1.55;color:var(--dim);margin-top:10px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:15px;background:transparent;cursor:pointer;display:block}
+input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;
+  background:linear-gradient(to right,var(--red) 0%,var(--red) var(--p,50%),#E6E2DB var(--p,50%),#E6E2DB 100%)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;
+  background:#fff;border:2.5px solid var(--red);margin-top:-4px;box-shadow:0 1px 2px rgba(0,0,0,.18)}
+input[type=range]::-moz-range-track{height:3px;border-radius:2px;background:#E6E2DB}
+input[type=range]::-moz-range-thumb{width:9px;height:9px;border-radius:50%;background:#fff;border:2.5px solid var(--red)}
+
+.cmp{display:flex;flex-direction:column;gap:6px;margin-bottom:7px}
+.cmprow{background:var(--bg);border-radius:7px;padding:7px 9px}
+.cmprow .h{display:flex;align-items:center;gap:6px}
+.cmprow .h .nm{font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmprow .h .x{font-size:12px;color:var(--dim2);line-height:1;padding:0 2px}
+.cmprow .h .x:hover{color:var(--red)}
+.cmprow .f{display:flex;align-items:center;gap:7px;margin-top:3px}
+.cmprow .f input[type=range]{flex:1;height:13px}
+.cmprow .f input[type=range]::-webkit-slider-thumb{width:9px;height:9px;margin-top:-3px}
+.cmprow .f .p{font-size:9.5px;color:var(--dim);font-variant-numeric:tabular-nums;min-width:24px;text-align:right}
+.cmprow .f .a{font-size:9.5px;color:var(--dim2);font-variant-numeric:tabular-nums;min-width:34px;text-align:right}
+
+.rule{background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 11px;display:flex;
+  align-items:center;gap:9px;margin-bottom:6px;transition:.13s}
+.rule.off{opacity:.45}
+.rule .body{flex:1;min-width:0}
+.rule .body .txt{font-size:11px;font-weight:600;letter-spacing:-.05px;line-height:1.4}
+.rule .body .txt b{font-weight:700}
+.rule .ctl{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.rule input[type=number],.rule input[type=time],.rule input[type=date]{
+  width:52px;height:25px;border:1px solid var(--line);border-radius:5px;text-align:center;
+  font-size:11px;font-variant-numeric:tabular-nums;outline:none;background:#fff}
+.rule input[type=time]{width:70px}
+.rule input[type=date]{width:106px}
+.rule input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(22,21,15,.06)}
+.sw{width:28px;height:16px;border-radius:9px;background:#DAD5CD;position:relative;transition:.16s;flex-shrink:0}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;
+  box-shadow:0 1px 2px rgba(0,0,0,.22);transition:.16s}
+.sw.on{background:var(--green)}
+.sw.on::after{left:14px}
+.rm{width:20px;height:20px;border-radius:4px;display:grid;place-items:center;color:var(--dim2);font-size:12px}
+.rm:hover{background:var(--red-lt);color:var(--red)}
+.addrow{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;padding-top:10px;border-top:1px dashed var(--line)}
+.addrule{padding:5px 8px;border-radius:5px;border:1px dashed #D6D1C9;font-size:10px;color:var(--ink2);
+  font-weight:550;background:#fff;transition:.13s}
+.addrule:hover{border-color:var(--ink);border-style:solid}
+.presets2{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
+.presets2 button{padding:4px 8px;border-radius:5px;border:1px solid var(--line);font-size:9.5px;font-weight:650;
+  color:var(--ink2);background:#fff}
+.presets2 button:hover{background:var(--line2)}
+
+.fld{margin-bottom:11px}
+.fld label{display:block;font-size:9.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--dim2);margin-bottom:4px}
+.fld select,.fld input[type=time]{width:100%;height:31px;border:1px solid var(--line);border-radius:6px;
+  padding:0 9px;font-size:12px;background:#fff;outline:none}
+.fld select:focus,.fld input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(22,21,15,.06)}
+.timewrap{display:flex;gap:4px}
+.timewrap input,.timewrap select{flex:1;width:auto;height:31px;border:1px solid var(--line);border-radius:6px;
+  padding:0 8px;font-size:12px;background:#fff;outline:none;min-width:0;font-variant-numeric:tabular-nums}
+.timewrap input:focus,.timewrap select:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(22,21,15,.06)}
+.timewrap button{width:31px;height:31px;border:1px solid var(--line);border-radius:6px;font-size:13px;
+  color:var(--ink2);display:grid;place-items:center;background:#fff}
+.timewrap button:hover{background:var(--line2)}
+.note{font-size:10.5px;color:var(--dim);line-height:1.5;background:var(--bg);border-radius:6px;padding:8px 10px}
+.note b{color:var(--ink2);font-weight:600}
+.warnbox{font-size:10.5px;line-height:1.5;background:var(--red-lt);border:1px solid #F7D3D9;color:#8C1020;
+  border-radius:6px;padding:8px 10px;margin-top:8px}
+.softbox{font-size:10.5px;line-height:1.5;background:#FFF8E6;border:1px solid #F2E2B8;color:#7A5B12;
+  border-radius:6px;padding:8px 10px;margin-top:8px}
+.softbox b{color:#5E450B}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:22px}
+.modal.on{display:flex}
+.modal .box{background:#fff;border-radius:12px;width:100%;max-width:760px;max-height:86vh;display:flex;
+  flex-direction:column;overflow:hidden;box-shadow:0 24px 70px -20px rgba(0,0,0,.4)}
+.modal .hd{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.modal .hd h3{font-size:14px;font-weight:700;flex:1;letter-spacing:-.2px}
+.modal .hd .x{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;color:var(--dim);font-size:15px}
+.modal .hd .x:hover{background:var(--line2)}
+.modal .bd{padding:15px 18px;overflow-y:auto}
+.modal .ft{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;
+  background:#FBFAF8;align-items:center}
+.modal .ft .sp{flex:1}
+
+.exgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:640px){.exgrid{grid-template-columns:1fr}}
+.exopt{display:flex;gap:10px;align-items:flex-start;padding:10px 11px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;transition:.13s;text-align:left}
+.exopt:hover{border-color:#CFCAC2;background:#FCFBFA}
+.exopt.on{border-color:var(--ink);background:#FCFBFA;box-shadow:0 0 0 1px var(--ink)}
+.exopt .cb{width:15px;height:15px;border-radius:4px;border:1.5px solid #DCD7CF;display:grid;place-items:center;
+  font-size:9px;color:transparent;flex-shrink:0;margin-top:1px;background:#fff}
+.exopt.on .cb{background:var(--ink);border-color:var(--ink);color:#fff}
+.exopt .t b{display:block;font-size:11.5px;font-weight:650}
+.exopt .t span{font-size:10px;color:var(--dim);line-height:1.45;display:block;margin-top:2px}
+.exopt .t em{font-style:normal;font-size:9px;font-weight:700;color:var(--red);letter-spacing:.3px;
+  text-transform:uppercase;display:block;margin-top:4px}
+.expreview{margin-top:14px;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#FBFAF8}
+.expreview .h{padding:8px 11px;border-bottom:1px solid var(--line);font-size:9.5px;font-weight:700;
+  letter-spacing:.7px;text-transform:uppercase;color:var(--dim2);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.exptabs{display:flex;gap:3px;flex-wrap:wrap}
+.exptabs button{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--dim);
+  padding:3px 7px;border-radius:4px;transition:.12s}
+.exptabs button:hover{background:var(--line2);color:var(--ink2)}
+.exptabs button.on{background:var(--ink);color:#fff}
+.expreview .b{padding:10px 11px;max-height:210px;overflow:auto;font-family:var(--mono);font-size:10px;
+  line-height:1.65;color:var(--ink2);white-space:pre;background:#fff}
+.expreview img{display:block;width:100%;height:auto}
+.expscope{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:13px}
+.expscope .lbl{margin:0 4px 0 0}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);
+  color:#fff;font-size:11.5px;font-weight:550;padding:9px 15px;border-radius:8px;opacity:0;z-index:400;
+  transition:.26s cubic-bezier(.2,.8,.3,1);display:flex;align-items:center;gap:7px;pointer-events:none}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+.empty{padding:34px 20px;text-align:center;color:var(--dim);font-size:12px;line-height:1.6}
+.banner{background:var(--blue-lt);border:1px solid #D5E3F4;border-radius:8px;padding:10px 12px;font-size:11px;
+  color:#1B4C82;line-height:1.55;margin-bottom:14px;display:flex;gap:8px}
+.banner b{font-weight:700}
+.warnband{background:var(--amber-lt);border:1px solid #F0E2C4;border-radius:8px;padding:10px 12px;font-size:11px;
+  color:#6B4A08;line-height:1.55;margin-bottom:14px;display:flex;gap:8px}
+.warnband b{font-weight:700;color:#4A3305}
+
+/* D3 - Vista-style title creation */
+.ct-grid{display:grid;grid-template-columns:minmax(320px,1fr) minmax(320px,1fr);gap:14px;align-items:start}
+@media(max-width:900px){.ct-grid{grid-template-columns:1fr}}
+.ct-panel{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px}
+.ct-sec{font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim2);margin-bottom:11px;display:flex;align-items:center;gap:8px}
+.ct-sec-note{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:500;color:var(--dim);font-size:10.5px}
+.ct-field{display:block;margin-bottom:12px}
+.ct-field>span{display:block;font-size:11px;font-weight:600;color:var(--ink2);margin-bottom:5px}
+.ct-sel,.ct-input{width:100%;height:36px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:0 11px;font-size:12px;color:var(--ink)}
+.ct-sel:focus,.ct-input:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgba(22,21,15,.06)}
+.ct-tools{display:flex;gap:7px;margin-bottom:9px}
+.ct-exps{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:8px}
+.ct-exp{position:relative;display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer;background:#fff;flex-wrap:wrap}
+.ct-exp:hover{border-color:#CFC9C0}
+.ct-exp.on{border-color:var(--red);background:var(--red-lt)}
+.ct-exp input{position:absolute;opacity:0;width:0;height:0}
+.ct-box{width:16px;height:16px;border:1.5px solid #DCD7CF;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;flex:0 0 auto;background:#fff}
+.ct-exp.on .ct-box{background:var(--red);border-color:var(--red);color:#fff}
+.ct-lab{display:flex;flex-direction:column;line-height:1.25;flex:1}
+.ct-lab b{font-size:11.5px;color:var(--ink)}
+.ct-lab i{font-size:9.5px;font-style:normal;color:var(--dim);font-weight:700;letter-spacing:.3px}
+.ct-exp .ct-hint{font-size:9.5px;color:var(--dim2);width:100%;padding-left:25px}
+.ct-preview{background:#FAF8F5;border:1px dashed var(--line);border-radius:8px;padding:11px;min-height:118px}
+.ct-pv{display:flex;align-items:center;gap:9px;padding:8px 9px;background:#fff;border:1px solid var(--line);border-radius:7px;margin-bottom:7px}
+.ct-pv:last-child{margin-bottom:0}
+.ct-tag{font-size:9.5px;font-weight:800;letter-spacing:.4px;color:var(--red-dk);background:var(--red-lt);border-radius:4px;padding:3px 6px;white-space:nowrap}
+.ct-pv b{font-size:12px;color:var(--ink);flex:1;word-break:break-word}
+.ct-pv .ct-hint{font-size:10px;color:var(--dim);width:auto;padding:0;white-space:nowrap}
+.ct-note{font-size:10.5px;color:var(--dim);line-height:1.55;margin-top:9px}
+.ct-list{display:flex;flex-direction:column;gap:7px;max-height:280px;overflow:auto}
+.ct-row{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:7px;padding:8px 9px}
+.ct-swatch{width:8px;height:26px;border-radius:3px;flex:0 0 auto}
+.ct-rowmain{display:flex;flex-direction:column;flex:1;min-width:0}
+.ct-rowmain b{font-size:11.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-rowmain span{font-size:10px;color:var(--dim)}
+.ct-in{font-size:9.5px;font-weight:700;color:var(--green);white-space:nowrap}
+.ct-empty{font-size:11px;color:var(--dim);line-height:1.6;padding:14px 4px;text-align:center}
+.btn.title-quick.active{background:var(--ink);border-color:var(--ink);color:#fff}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div class="login" id="login">
+  <div class="lpanel">
+    <div class="lg-brand">
+      <div class="mk">TGV</div>
+      <div>
+        <b>TGV Cinemas</b>
+        <span>Programming Console</span>
+      </div>
+    </div>
+    <div class="lg-mid">
+      <h1>Build the week.<br>Then <em>place it</em>.</h1>
+      <p>Pick the slate, forecast every title at once, decide where it plays, and generate the full operating-day schedule in one pass.</p>
+      <div class="lg-flow">
+        <div><i></i> Create Vista-style titles with experiences</div>
+        <div><i></i> Rate each title, then pick the weekly slate</div>
+        <div><i></i> Forecast and set where each title plays</div>
+        <div><i></i> Generate and edit the 24-hour schedule</div>
+      </div>
+    </div>
+    <div class="lg-foot">Internal use only · Screen data as at W45 2026</div>
+  </div>
+
+  <div class="rpanel">
+    <form class="lgbox" id="lgform" autocomplete="off">
+      <div class="eyebrow">Programmer sign in</div>
+      <h2>Welcome back</h2>
+      <div class="sub">Sign in with your TGV staff account to plan the week.</div>
+
+      <div class="lgmsg" id="lgmsg"></div>
+
+      <div class="fld2">
+        <label for="lgemail">Staff email</label>
+        <input type="email" id="lgemail" placeholder="name@tgvcinemas.com" autocomplete="username" />
+      </div>
+      <div class="fld2">
+        <label for="lgpass">Password</label>
+        <div class="pwwrap">
+          <input type="password" id="lgpass" placeholder="••••••••" autocomplete="current-password" />
+          <button type="button" class="eye" id="lgeye" title="Show password">👁</button>
+        </div>
+      </div>
+      <div class="fld2">
+        <label for="lgrole">Role</label>
+        <select id="lgrole">
+          <option value="Programmer">Programmer — full access</option>
+          <option value="Cinema Manager">Cinema Manager — own cinemas</option>
+          <option value="Viewer">Viewer — read only</option>
+        </select>
+      </div>
+      <div class="lgrow">
+        <label class="chk"><input type="checkbox" id="lgremember" checked /> Keep me signed in</label>
+        <a href="#" id="lgforgot">Forgot password?</a>
+      </div>
+      <button type="submit" class="btn-login" id="lgsubmit">Sign in</button>
+
+      <div class="lgdemo">
+        <b>Prototype:</b> any email and any password of 4+ characters will sign you in. Pick a role to see how access changes.
+      </div>
+      <div class="lglegal">© 2026 TGV Cinemas Sdn Bhd · Programming tools are for internal planning only</div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app" class="hidden">
+  <header class="top">
+    <div class="brand">
+      <div class="mk">TGV</div>
+      <div>
+        <b>Week Planner</b>
+        <span id="topweek">W45 · 2 Nov 2026</span>
+      </div>
+    </div>
+    <div class="sp"></div>
+    <select class="sel" id="weekSel" title="Week"></select>
+    <button class="btn ghost title-quick" id="titleQuick" data-act="step" data-v="titles">＋ Create title</button>
+    <button class="btn ghost rating-quick" id="ratingQuick" data-act="step" data-v="ratings">★ Film ratings</button>
+    <button class="btn ghost" data-act="exportopen">⤓ Export</button>
+    <button class="btn red" data-act="gen">Generate schedule</button>
+    <button class="avatar" data-act="avmenu">
+      <span class="ini" id="avini">--</span>
+      <span class="who"><b id="avname">—</b><span id="avrole">—</span></span>
+    </button>
+  </header>
+
+  <nav class="stepper" id="stepper"></nav>
+  <main class="stage" id="stage"></main>
+</div>
+
+<div class="avmenu" id="avmenu">
+  <div class="who"><b id="mname">—</b><span id="mrole">—</span></div>
+  <button data-act="gosettings">⚙ Preferences</button>
+  <button data-act="signout">⏻ Sign out</button>
+</div>
+
+<div class="scrim" id="scrim" data-act="closedrawer"></div>
+<aside class="drawer" id="drawer"></aside>
+<div class="modal" id="modal"><div class="box" id="modalbox"></div></div>
+<div class="toast" id="toast"><span>✓</span><span id="toastmsg"></span></div>
+
+<script>
+/* ============================================================
+   DATA — real screen configs pulled from the Screen Schedule system
+   ============================================================ */
+const SCREENS = {
+  'Suria KLCC':[['Beanie 1',24],['Beanie 2',22],['Cinema 1',154],['Cinema 2',168],['Cinema 3',180],['Cinema 4',180],['Cinema 5',109],['Cinema 6',141],['IMAX',143],['Indulge 1',40],['Indulge 2',40],['Indulge BEREX',17]],
+  '1 Utama':[['Beanie',40],['BEREX',12],['Cinema 1',117],['Cinema 2',134],['Cinema 3',178],['Cinema 4',280],['Cinema 5',290],['Cinema 6',153],['Cinema 7',153],['IMAX',277],['INDULGE 2',31],['Junior',66]],
+  'Sunway Pyramid':[['Beanie',48],['Cinema 1',110],['Cinema 10',72],['Cinema 2',86],['Cinema 3',237],['Cinema 4',186],['Cinema 5',268],['Cinema 6',95],['Cinema 7',126],['IMAX',273],['Indulge 1',40],['Indulge BEREX',20],['Junior',72]],
+  'Pavilion KL':[['Cinema 1',196],['Cinema 2',267],['Cinema 3',254],['Cinema 4',195],['Cinema 5',86],['Cinema 6',85],['Cinema 7',116],['Cinema 8',107],['INDULGE 1',39],['INDULGE 2',36]],
+  'Setia Walk':[['Beanie',60],['Cinema 1',205],['Cinema 2',112],['Cinema 3',124],['Cinema 4',214],['Cinema 5',276],['Cinema 6',238],['Cinema 7',235],['Cinema 8',225]],
+  'Velocity':[['Cinema 1',260],['Cinema 2',214],['Cinema 3',174],['Cinema 4',214],['Cinema 5',203],['IMAX',338],['INDULGE 1',36],['INDULGE 2',36],['Junior',174]],
+  'Mines':[['Cinema 1',102],['Cinema 2',141],['Cinema 3',225],['Cinema 4',223],['Cinema 5',284]],
+  'Tebrau':[['Beanie',36],['Cinema 1',263],['Cinema 2',124],['Cinema 3',124],['Cinema 4',189],['Cinema 5',144],['Cinema 6',146],['Cinema 7',114],['Imax',332],['Junior',76]],
+  'Gurney Paragon Mall':[['Beanie',30],['Cinema 1',274],['Cinema 2',202],['Cinema 3',122],['Cinema 4',96],['Cinema 5',92],['Cinema 6',78],['Cinema 7',104],['IMAX',292]]
+};
+const CINEMAS = Object.keys(SCREENS).map(name=>{
+  const screens = SCREENS[name].map(([n,cap])=>{
+    const l = n.toLowerCase();
+    const type = l.includes('imax')?'IMAX':l.includes('berex')?'BEREX':l.includes('indulge')?'Indulge'
+      :l.includes('beanie')?'Beanie':l.includes('junior')?'Junior':'Standard';
+    return {name:n, cap, type};
+  });
+  const total = screens.reduce((a,s)=>a+s.cap,0);
+  // demand scales with seat count, mildly superlinear — a bigger multiplex draws disproportionately.
+  // anchored so Suria KLCC (1,218 seats) = 0.937, the level the model was tuned at.
+  return {name, screens, total, atp:19.5, factor: 0.937*Math.pow(total/1218, 0.85)};
+});
+
+const FILMS = [
+{id:'kudrat',title:'KUDRAT 1968',sub:'High Council',genre:'Action · Crime',lang:'Malay',mins:113,rating:'16',
+ dist:'Astro Shaw',release:'2026-10-29',c1:'#2A1A10',c2:'#8A5624',imax:0,
+ about:'Abbas enrols at KUDRAT, an institution carrying his estranged father\u2019s name, where a buried history forces him to confront a legacy he never asked for.',
+ comps:[{n:'Kahar: Kapla High Council',sim:88,aps:74,idx:74},{n:'Projek: High Council',sim:81,aps:58,idx:66},{n:'Mat Kilau',sim:44,aps:47,idx:71}],
+ scores:{story:78,cast:74,heat:86,fit:92,ip:88},
+ rules:[{t:'minWeek',v:28},{t:'minDay',v:4},{t:'prime',v:2}]},
+{id:'clayface',title:'CLAYFACE',sub:'DC Studios',genre:'Horror · Superhero',lang:'English',mins:108,rating:'18',
+ dist:'Warner Bros.',release:'2026-10-23',c1:'#14161C',c2:'#5A3A2E',imax:1,
+ about:'A body-horror reimagining of the Batman rogue — an actor\u2019s disintegrating form and the monster he becomes holding it together.',
+ comps:[{n:'The Conjuring 3',sim:86,aps:36,idx:58},{n:'Joker',sim:72,aps:52,idx:76},{n:'Scream VI',sim:64,aps:29,idx:49}],
+ scores:{story:72,cast:66,heat:78,fit:58,ip:74},
+ rules:[{t:'minDay',v:2},{t:'maxDay',v:5},{t:'noEarly',v:'12:00'}]},
+{id:'sf',title:'STREET FIGHTER',sub:'',genre:'Action · Adventure',lang:'English',mins:128,rating:'P13',
+ dist:'Sony Pictures',release:'2026-10-30',c1:'#0B1420',c2:'#1E6E8C',imax:1,
+ about:'The World Warrior tournament arrives on the big screen — a globe-spanning fight card pulling the franchise\u2019s full roster into one bracket.',
+ comps:[{n:'Mortal Kombat',sim:84,aps:54,idx:58},{n:'Dune: Part Two',sim:52,aps:66,idx:82},{n:'Uncharted',sim:71,aps:41,idx:55}],
+ scores:{story:62,cast:70,heat:84,fit:66,ip:82},
+ rules:[{t:'minWeek',v:24},{t:'minDay',v:3},{t:'imax',v:null}]},
+{id:'jailer',title:'JAILER 2',sub:'',genre:'Action · Comedy',lang:'Tamil',mins:165,rating:'P13',
+ dist:'Sun Pictures',release:'2026-10-30',c1:'#1A1006',c2:'#8C6A18',imax:1,
+ about:'The retired jailer is pulled back into the business of men who should have stayed locked up. Long runtime, big star, late bookings.',
+ comps:[{n:'Jailer (2023)',sim:94,aps:62,idx:72},{n:'Vikram',sim:78,aps:48,idx:68},{n:'Leo',sim:74,aps:44,idx:60}],
+ scores:{story:66,cast:82,heat:80,fit:74,ip:86},
+ rules:[{t:'minDay',v:2},{t:'maxDay',v:4},{t:'imax',v:null}]},
+{id:'whale',title:'WHALEFALL',sub:'',genre:'Thriller · Survival',lang:'English',mins:100,rating:'P13',
+ dist:'20th Century',release:'2026-10-22',c1:'#061018',c2:'#12414F',imax:0,
+ about:'A diver is swallowed by a sperm whale with one hour of air left and one way out.',
+ comps:[{n:'The Shallows',sim:82,aps:24,idx:52},{n:'47 Meters Down',sim:76,aps:18,idx:44},{n:'Fall',sim:69,aps:21,idx:48}],
+ scores:{story:74,cast:60,heat:52,fit:54,ip:48},
+ rules:[{t:'minWeek',v:7},{t:'maxDay',v:3}]},
+{id:'petaka',title:'PETAKA GUNUNG',sub:'',genre:'Horror · Adventure',lang:'Malay',mins:100,rating:'P13',
+ dist:'Skop Productions',release:'2026-10-15',c1:'#0E1410',c2:'#2F5233',imax:0,
+ about:'A mountain expedition goes wrong when the group disturbs something that was meant to stay buried.',
+ comps:[{n:'Munafik 2',sim:74,aps:44,idx:68},{n:'Roh',sim:81,aps:26,idx:46},{n:'Sangkar',sim:66,aps:22,idx:44}],
+ scores:{story:56,cast:48,heat:62,fit:70,ip:44},
+ rules:[{t:'minWeek',v:7},{t:'maxDay',v:3}]},
+{id:'always',title:'ALWAYS YOURS',sub:'',genre:'Romance · Drama',lang:'Malay',mins:110,rating:'P13',
+ dist:'Primeworks',release:'2026-10-08',c1:'#1B0F16',c2:'#8A3A5C',imax:0,
+ about:'A love story across two timelines, hinging on a letter that arrives thirty years too late.',
+ comps:[{n:'Ada Apa Dengan Cinta?',sim:72,aps:30,idx:62},{n:'Pulang',sim:68,aps:24,idx:52},{n:'Hujan',sim:61,aps:19,idx:46}],
+ scores:{story:60,cast:55,heat:48,fit:62,ip:38},
+ rules:[{t:'minWeek',v:5},{t:'maxDay',v:2}]},
+{id:'udta',title:'UDTA TEER',sub:'',genre:'Action · Drama',lang:'Punjabi',mins:140,rating:'18',
+ dist:'White Hill',release:'2026-09-25',c1:'#150C0C',c2:'#6E2020',imax:0,
+ about:'A Punjab-set crime drama about the cost of a single pulled trigger, told across three families.',
+ comps:[{n:'Animal',sim:66,aps:28,idx:58},{n:'Udta Punjab',sim:79,aps:16,idx:52},{n:'Arjan',sim:58,aps:14,idx:40}],
+ scores:{story:58,cast:62,heat:44,fit:40,ip:52},
+ rules:[{t:'minWeek',v:4},{t:'maxDay',v:2}]},
+{id:'kabaddi',title:'KABADDI 5',sub:'',genre:'Sports · Comedy',lang:'Punjabi',mins:150,rating:'P13',
+ dist:'Rhythm Boyz',release:'2026-09-18',c1:'#10140A',c2:'#5E7020',imax:0,
+ about:'The fifth entry in the kabaddi comedy series — village rivals, a championship, the same ensemble back together.',
+ comps:[{n:'Kabaddi Kabaddi',sim:88,aps:22,idx:50},{n:'Carry On Jatta 3',sim:62,aps:26,idx:54},{n:'Jatt & Juliet 3',sim:57,aps:18,idx:46}],
+ scores:{story:52,cast:58,heat:46,fit:44,ip:68},
+ rules:[{t:'minWeek',v:4},{t:'maxDay',v:2}]},
+{id:'godskin',title:'GOD SKIN',sub:'',genre:'Horror',lang:'Malay',mins:125,rating:'18',
+ dist:'Skop Productions',release:'2026-10-01',c1:'#120C14',c2:'#4A2A56',imax:0,
+ about:'A ritual-horror piece about a family that inherits more than a house.',
+ comps:[{n:'Munafik',sim:71,aps:32,idx:58},{n:'Interchange',sim:64,aps:16,idx:44},{n:'Belukar',sim:58,aps:12,idx:38}],
+ scores:{story:50,cast:44,heat:56,fit:58,ip:36},
+ rules:[{t:'minWeek',v:4},{t:'maxDay',v:2}]},
+{id:'henry',title:"HENRY'S FIRST",sub:'',genre:'Drama',lang:'English',mins:115,rating:'P13',
+ dist:'GSC Films',release:'2026-11-12',c1:'#101210',c2:'#4A5240',imax:0,
+ about:'A father and a son spend one weekend rebuilding a car and thirty years of silence.',
+ comps:[{n:'Aftersun',sim:68,aps:14,idx:56},{n:'CODA',sim:61,aps:18,idx:54},{n:'Manchester by the Sea',sim:55,aps:12,idx:50}],
+ scores:{story:70,cast:58,heat:40,fit:46,ip:30},
+ rules:[{t:'minWeek',v:3},{t:'maxDay',v:2}]}
+];
+
+/* ---- Shared titles published by the Creator in Create Film ---- */
+(function(){
+  function sync(){
+    let changed = false;
+    try{
+      const raw = localStorage.getItem('tgv.createfilm.titles');
+      if(!raw) return false;
+      const created = JSON.parse(raw);
+      if(!Array.isArray(created)) return false;
+      created.forEach((t,i)=>{
+        const id = 'shared-' + String(t.id || i).replace(/[^a-z0-9_-]/gi,'');
+        if(FILMS.some(f=>f.id===id || f.title===t.title)) return;
+        FILMS.push({
+          id, title:t.title, sub:t.expName || '', genre:t.genre || 'Feature', lang:t.lang || 'English',
+          mins:t.mins || 120, rating:t.cert || 'P13', dist:t.dist || 'TGV',
+          release:t.release || '2026-11-12', c1:'#171820', c2:t.color || '#E4002B',
+          imax:/IMAX/i.test(t.code || '') ? 1 : 0,
+          about:'Published by the Creator in Create Film. Shared with every signed-in user — no second title request.',
+          comps:[{n:'Comparable release',sim:62,aps:52,idx:58}],
+          scores:{story:65,cast:62,heat:70,fit:66,ip:60},
+          rules:[{t:'minWeek',v:21},{t:'minDay',v:3},{t:'maxDay',v:8}]
+        });
+        changed = true;
+      });
+    }catch(e){}
+    return changed;
+  }
+  sync();
+  addEventListener('storage', e=>{ if(e.key === 'tgv.createfilm.titles' && sync()) render(); });
+  addEventListener('message', e=>{ if(e.data && e.data.type === 'tgv.titles'){ sync(); render(); } });
+})();
+
+const DIMS = [
+  {k:'story',label:'Story & craft'},
+  {k:'cast', label:'Cast & star draw'},
+  {k:'heat', label:'Marketing heat'},
+  {k:'fit',  label:'Market fit'},
+  {k:'ip',   label:'Franchise strength'}
+];
+const W = {story:.22, cast:.20, heat:.22, fit:.20, ip:.16};
+const DOW = [{n:'Mon',f:.80},{n:'Tue',f:.86},{n:'Wed',f:.82},{n:'Thu',f:.88},{n:'Fri',f:1.10},{n:'Sat',f:1.34},{n:'Sun',f:1.20}];
+const DECAY = [1.00,.72,.52,.38,.28,.21,.16,.12,.09,.07];
+const WEEKS = [
+  {id:'W44',start:'2026-10-26',label:'W44 · 26 Oct'},
+  {id:'W45',start:'2026-11-02',label:'W45 · 2 Nov'},
+  {id:'W46',start:'2026-11-09',label:'W46 · 9 Nov'},
+  {id:'W47',start:'2026-11-16',label:'W47 · 16 Nov'}
+];
+const RULE_TYPES = {
+  minWeek:  {label:'Minimum sessions per week', kind:'num',  def:12, say:v=>`At least <b>${v} sessions</b> every week`},
+  minHall:  {label:'Every hall, every week',    kind:'none', say:()=>`At least <b>1 session in every hall</b>, every week`},
+  minDay:   {label:'Minimum sessions per day',  kind:'num',  def:3, say:v=>`At least <b>${v} sessions</b> every day`},
+  maxDay:   {label:'Maximum sessions per day',  kind:'num',  def:4, say:v=>`No more than <b>${v} sessions</b> a day`},
+  minScreens:{label:'Minimum screens',          kind:'num',  def:3, say:v=>`Play on at least <b>${v} screens</b>`},
+  prime:    {label:'Prime-time guarantee',      kind:'num',  def:2, say:v=>`At least <b>${v} session${v>1?'s':''}</b> 19:00–22:00`},
+  noEarly:  {label:'No early sessions',         kind:'time', def:'12:00', say:v=>`Nothing before <b>${v}</b>`},
+  mustPlay: {label:'Must play until',           kind:'date', def:'2026-11-19', say:v=>`Stays on screen until <b>${fmtShort(v)}</b>`},
+  imax:     {label:'IMAX contract',             kind:'none', say:()=>`Must hold the <b>IMAX screen</b>`}
+};
+const PRESETS = {
+  'Blockbuster':   [{t:'minWeek',v:28},{t:'minDay',v:4},{t:'prime',v:2},{t:'maxDay',v:9}],
+  'Wajib tayang':  [{t:'minHall',v:null},{t:'minWeek',v:14},{t:'noEarly',v:'12:00'}],
+  'Wide release':  [{t:'minScreens',v:6},{t:'minDay',v:3},{t:'prime',v:2}],
+  'Standard run':  [{t:'minWeek',v:7},{t:'maxDay',v:4},{t:'prime',v:1}],
+  'Limited':       [{t:'minWeek',v:4},{t:'maxDay',v:2}],
+  'No rules':      []
+};
+const PALETTE = [
+  {h:'#E4002B',t:'#FDE8EC'},{h:'#1F5FA8',t:'#E9F1FA'},{h:'#12734A',t:'#E8F5EF'},
+  {h:'#96600A',t:'#FBF1DF'},{h:'#6B3FA0',t:'#F0EAF8'},{h:'#0E7490',t:'#E4F4F7'},
+  {h:'#9D174D',t:'#FBE8EF'},{h:'#365314',t:'#EDF2E3'},{h:'#B45309',t:'#FBEDE0'},
+  {h:'#334155',t:'#ECEFF3'}
+];
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const pd = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
+const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const money = n => 'RM ' + Math.round(n).toLocaleString('en-MY');
+const nf = n => Math.round(n).toLocaleString('en-MY');
+const pad2 = n => String(n).padStart(2,'0');
+const hhmm = m => pad2(Math.floor(m/60)%24) + ':' + pad2(((m%60)+60)%60);
+const hhmmEnd = m => m >= 1440 ? '24:00' : hhmm(m);
+const fmtShort = s => pd(s).toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+const fmtLong = d => d.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short'});
+function hash(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+function rng(seed){ let s=seed>>>0||1; return ()=>{ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
+const getFilm = id => FILMS.find(f=>f.id===id);
+const getCinema = n => CINEMAS.find(c=>c.name===n) || CINEMAS[0];
+const getWeek = () => WEEKS.find(w=>w.id===state.weekId) || WEEKS[1];
+const weekDates = w => { const s = pd(w.start); return DOW.map((d,i)=>({...d, date:addDays(s,i), idx:i})); };
+const PRE = 15, TURN = 15, OPEN = 0, CLOSE = 1440, SPAN = CLOSE - OPEN;
+const TIME_SLOTS = (()=>{ const a=[]; for(let m=OPEN; m<=CLOSE-15; m+=15) a.push(m); return a; })();
+function primeWeight(m){
+  const h = ((m%1440)+1440)%1440/60;
+  if(h<11) return .30; if(h<12) return .46; if(h<14) return .74; if(h<17) return .60;
+  if(h<19) return .86; if(h<22) return 1.45; if(h<24) return .72; return .34;
+}
+function weekIndexOf(film, weekStart){ return Math.floor(Math.floor((weekStart - pd(film.release))/86400000)/7); }
+function toMin(t){
+  const s = String(t);
+  if(!s.includes(':')) return Number(s);
+  const [h,m] = s.split(':').map(Number);
+  return h*60 + (m||0);
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  user:null,
+  step:'titles',
+  weekId:'W45',
+  lineup:['kudrat','clayface','sf','jailer','petaka','whale'],
+  scores:{}, ratings:{}, ratingAs:'aina', comps:{}, rules:{}, adj:{}, loc:{},
+  scale:1,
+  mode:'single',
+  cinemas:['Suria KLCC'],
+  autoN:3,
+  dayIdx:0,
+  view:'table',
+  schedule:null,
+  drawer:null,
+  editing:null,
+  exp:{forecast:true, sessions:true, summary:false, image:false, print:false},
+  expPrev:null,
+  created:[],
+  ct:{film:'__new__', name:'Doomsday', exps:['imax2d','beanie']}
+};
+FILMS.forEach(f=>{
+  state.scores[f.id] = seedStar(f.scores);
+  state.comps[f.id] = f.comps.map(c=>({...c}));
+  state.rules[f.id] = f.rules.map(r=>({...r, on:true}));
+  state.adj[f.id] = 1;
+  state.loc[f.id] = {mode:'all', list:[]};
+});
+let ROWID = 1;
+let LASTF = null;
+
+/* ============================================================
+   MODEL
+   ============================================================ */
+/* D3 - one 0-5 star score (half-steps) drives the same demand model: star x 20 -> 0-100. */
+function composite(sc){
+  if(sc && typeof sc === 'object'){
+    let t=0; DIMS.forEach(d=> t += (sc[d.k]??50)*W[d.k]); return t;
+  }
+  return clamp((Number(sc)||0)*20, 0, 100);
+}
+function seedStar(sc){ return clamp(Math.round(composite(sc)/20*2)/2, 0, 5); }
+function starHTML(val){
+  return [1,2,3,4,5].map(i=>{
+    const cls = val>=i ? ' on' : val>=i-0.5 ? ' half' : '';
+    return `<span class="star${cls}"><span class="glyph">★</span>
+      <span class="hit l" data-star="${(i-0.5).toFixed(1)}"></span>
+      <span class="hit r" data-star="${i}"></span></span>`;
+  }).join('');
+}
+/* ---------------- D3 - ATTRIBUTED 5-STAR RATINGS ----------------
+   Four programmers score every film on the same 0-5 scale. The mean of their
+   attributed scores is rounded to a half-star and becomes the demand score. */
+const PROGRAMMERS = [
+  {id:'aina',    short:'Aina',     name:'Aina Rahman',  role:'Lead programmer'},
+  {id:'weijian', short:'Wei Jian', name:'Wei Jian Tan', role:'Programmer'},
+  {id:'sharul',  short:'Sharul',   name:'Sharul Azmi',  role:'Programmer'},
+  {id:'meiling', short:'Mei Ling', name:'Mei Ling Kok', role:'Regional programmer'}
+];
+const PCOLORS = ['#E4002B','#1F5FA8','#7C4DBE','#12734A'];
+const RATING_TIMES = ['03 Nov · 09:12','03 Nov · 10:05','03 Nov · 11:20','03 Nov · 14:10'];
+const RATING_TILT = [
+  [ .5,  0, -.5,  .5], [  0,  .5,  0, -.5], [ .5, -.5,  .5,  0],
+  [-.5,  .5,  0,  .5], [ .5,  0, -.5, -.5], [  0,  .5,  .5, -.5],
+  [ .5, -.5,  .5,  0], [-.5,  0, -.5,  .5], [  0,  .5,  .5, -.5],
+  [ .5,  0, -.5,  0],  [  0,  .5, -.5,  .5], [ .5, -.5,  0, -.5]
+];
+function clampStar(v){ return clamp(Math.round((Number(v)||0)*2)/2, 0, 5); }
+function personOf(id){ return PROGRAMMERS.find(p=>p.id===id) || PROGRAMMERS[0]; }
+function ratingValue(filmId, personId){
+  const rec = state.ratings[filmId] && state.ratings[filmId][personId];
+  return rec ? clampStar(rec.score) : 0;
+}
+function filmScores(filmId){ return PROGRAMMERS.map(p=>ratingValue(filmId, p.id)); }
+function filmAverage(filmId){
+  const vals = filmScores(filmId);
+  return vals.reduce((a,b)=>a+b,0) / (vals.length || 1);
+}
+function filmSpread(filmId){
+  const vals = filmScores(filmId);
+  return vals.length ? Math.max(...vals) - Math.min(...vals) : 0;
+}
+function consensusInfo(spread){
+  if(spread <= .5) return {label:'Strong', cls:'strong'};
+  if(spread <= 1)  return {label:'Mixed',  cls:'mixed'};
+  return {label:'Split', cls:'split'};
+}
+function syncConsensus(){
+  FILMS.forEach(f=>{ state.scores[f.id] = clampStar(filmAverage(f.id)); });
+}
+function seedRatings(){
+  const out = {};
+  FILMS.forEach((f,i)=>{
+    const base = seedStar(f.scores);
+    const tilt = RATING_TILT[i % RATING_TILT.length];
+    out[f.id] = {};
+    PROGRAMMERS.forEach((p,j)=>{
+      out[f.id][p.id] = {
+        score:clampStar(base + tilt[j % PROGRAMMERS.length]),
+        by:p.id,
+        at:RATING_TIMES[j % RATING_TIMES.length]
+      };
+    });
+  });
+  return out;
+}
+function resetRatingsFor(filmId){
+  state.ratings[filmId] = seedRatings()[filmId];
+  syncConsensus();
+}
+function setRating(filmId, personId, value){
+  state.ratings[filmId] = state.ratings[filmId] || {};
+  state.ratings[filmId][personId] = {score:clampStar(value), by:personId, at:'just now'};
+  syncConsensus();
+}
+state.ratings = seedRatings();
+syncConsensus();
+
+function verdict(v){
+  if(v>=78) return {l:'Strong', c:'strong'};
+  if(v>=62) return {l:'Solid',  c:'solid'};
+  if(v>=45) return {l:'Watch',  c:'watch'};
+  return {l:'Weak', c:'weak'};
+}
+function anchorOf(comps){
+  let ws=0, aps=0, idx=0;
+  comps.forEach(c=>{ const s=c.sim/100; ws+=s; aps+=s*c.aps; idx+=s*c.idx; });
+  if(!ws) return {aps:0, idx:50};
+  return {aps:aps/ws, idx:idx/ws};
+}
+function hasRule(film,t){ return (state.rules[film.id]||[]).some(r=>r.t===t && r.on); }
+function ruleVal(film,t){ const r = (state.rules[film.id]||[]).find(x=>x.t===t && x.on); return r ? r.v : null; }
+function colorOf(filmId){
+  const i = state.lineup.indexOf(filmId);
+  return i < 0 ? {h:'#8B847A', t:'#F2F0EC'} : PALETTE[i % PALETTE.length];
+}
+
+function forecastFor(film, cinema){
+  const week = getWeek();
+  const idx = composite(state.scores[film.id]);
+  const anchor = anchorOf(state.comps[film.id]);
+  const lift = (0.55 + 0.90*idx/100) / (0.55 + 0.90*Math.max(30,anchor.idx)/100);
+  const aps = anchor.aps * lift * state.scale * (state.adj[film.id]||1);
+  const wi = weekIndexOf(film, pd(week.start));
+  const pre = wi < 0;
+  const decay = pre ? 1 : DECAY[clamp(wi,0,DECAY.length-1)];
+  const avgCap = cinema.total / cinema.screens.length;
+
+  const rMaxDay = ruleVal(film,'maxDay'), rMinDay = ruleVal(film,'minDay');
+  const rPrime = ruleVal(film,'prime'), rMinScreens = ruleVal(film,'minScreens');
+  const rMinWeek = ruleVal(film,'minWeek');
+  const maxDay = rMaxDay ? Number(rMaxDay) : 18;
+  const minDay = rMinDay ? Number(rMinDay) : 1;
+  const primeN = rPrime ? Number(rPrime) : 0;
+
+  const days = weekDates(week).map(d=>{
+    const ceiling = aps * 10 * d.f * decay * cinema.factor;
+    let n = 1;
+    while(n < Math.min(maxDay,16)){
+      if((ceiling/4.5)*Math.exp(-(n+1)/4.5) < 12) break;
+      n++;
+    }
+    const demand = n;
+    if(minDay > n) n = minDay;
+    if(rMinScreens && Number(rMinScreens) > n) n = Math.min(Number(rMinScreens), cinema.screens.length);
+    if(primeN > n) n = primeN;
+    n = Math.min(n, Math.max(maxDay, minDay));
+    const admits = ceiling * (1 - Math.exp(-n/4.5));
+    return {dow:d.n, date:d.date, factor:d.f, ceiling, demand, shows:n, admits, seats:n*avgCap};
+  });
+
+  const floor = Math.max(Number(rMinWeek||0), hasRule(film,'minHall') ? cinema.screens.length : 0);
+  let totalShows = days.reduce((a,d)=>a+d.shows,0);
+  if(totalShows < floor){
+    let need = floor - totalShows, guard = 0;
+    const order = [...days].sort((a,b)=>b.ceiling-a.ceiling);
+    while(need > 0 && guard++ < 300){
+      let moved = false;
+      for(const d of order){
+        if(need <= 0) break;
+        if(d.shows < Math.max(maxDay, 12)){ d.shows++; need--; moved = true; }
+      }
+      if(!moved) break;
+    }
+  }
+  days.forEach(d=>{ d.admits = d.ceiling * (1 - Math.exp(-d.shows/4.5)); d.seats = d.shows*avgCap; });
+
+  const tot = days.reduce((a,d)=>({shows:a.shows+d.shows, admits:a.admits+d.admits, seats:a.seats+d.seats}),
+    {shows:0,admits:0,seats:0});
+  tot.occ = tot.seats ? tot.admits/tot.seats : 0;
+  tot.revenue = tot.admits * cinema.atp;
+
+  return {film, cinema, days, total:tot, idx, anchor, lift, aps, decay, wi, pre,
+          maxDay, minDay, primeN, floor,
+          noEarly: hasRule(film,'noEarly') ? toMin(ruleVal(film,'noEarly')) : null,
+          imaxOnly: hasRule(film,'imax')};
+}
+
+/* which cinemas are we targeting? */
+function targetCinemas(){
+  if(state.mode === 'single') return [getCinema(state.cinemas[0] || CINEMAS[0].name)];
+  if(state.mode === 'multi')  return state.cinemas.map(n=>getCinema(n));
+  return autoRank().slice(0, state.autoN).map(r=>r.cinema);
+}
+function autoRank(){
+  const cache = {};
+  const rows = CINEMAS.map(cinema=>{
+    let admits = 0, shows = 0;
+    state.lineup.forEach(id=>{
+      const key = id+'|'+cinema.name;
+      const fc = cache[key] || (cache[key] = forecastFor(getFilm(id), cinema));
+      admits += fc.total.admits; shows += fc.total.shows;
+    });
+    // admits per screen is the metric programmers actually trade on
+    const perScreen = admits / cinema.screens.length;
+    return {cinema, admits, shows, perScreen};
+  });
+  return rows.sort((a,b)=> b.perScreen - a.perScreen);
+}
+/* per-film location permission */
+function allowedIn(film, cinemaName){
+  const l = state.loc[film.id] || {mode:'all', list:[]};
+  if(l.mode === 'all')  return true;
+  if(l.mode === 'only') return l.list.includes(cinemaName);
+  return !l.list.includes(cinemaName);
+}
+function filmsFor(cinemaName){
+  return state.lineup.filter(id=>allowedIn(getFilm(id), cinemaName));
+}
+
+/* ============================================================
+   SCHEDULER
+   ============================================================ */
+function suit(screen, film){
+  const aps = anchorOf(state.comps[film.id]).aps;
+  const strength = clamp((aps-20)/55, 0, 1);
+  // a 24-seat boutique is not interchangeable with a 180-seat house
+  const capW = 0.42 + 0.58*clamp(screen.cap/180, 0, 1.15);
+  let base;
+  switch(screen.type){
+    case 'IMAX': base = film.imax ? 2.1 : 0; break;
+    case 'Beanie': case 'Junior': base = .15 + (1-strength)*.55; break;
+    case 'Indulge': case 'BEREX': base = .72; break;
+    default: base = 1.0 + clamp(screen.cap/260, 0, .35);
+  }
+  return base * capW;
+}
+function gapsFor(occ, si, block){
+  const iv = occ[si].slice().sort((a,b)=>a.s-b.s);
+  const out = [];
+  let cur = OPEN;
+  iv.forEach(x=>{
+    if(x.s - cur >= block + TURN) out.push([cur, x.s - TURN]);
+    cur = Math.max(cur, x.e);
+  });
+  if(CLOSE - cur >= block) out.push([cur, CLOSE]);
+  return out;
+}
+function bestSlot(cinema, occ, film, fc, onlySi){
+  const block = film.mins + PRE;
+  let best = null;
+  cinema.screens.forEach((scr, si)=>{
+    if(onlySi !== undefined && si !== onlySi) return;
+    const fit = suit(scr, film);
+    if(!fit) return;
+    gapsFor(occ, si, block).forEach(([gs, ge])=>{
+      const latest = ge - block;
+      if(latest < gs) return;
+      const cands = new Set([gs, latest]);
+      for(let t = Math.ceil(gs/30)*30; t <= latest; t += 30) cands.add(t);
+      cands.forEach(st=>{
+        if(st < gs || st > latest) return;
+        if(fc.noEarly !== null && st < fc.noEarly) return;
+        // same title may run on several screens, but staggered — never two starts at once
+        const clash = occ.some((list, k)=> k !== si && list.some(x=> x.filmId === film.id && Math.abs(x.s - st) < 30));
+        if(clash) return;
+        // spread across the building: an empty screen beats a busy one
+        const load = 1 / (1 + 0.42*occ[si].length);
+        const score = primeWeight(st) * fit * load * (0.94 + 0.12*((hash(film.id+si+st)%100)/100));
+        if(!best || score > best.score) best = {si, start:st, score};
+      });
+    });
+  });
+  return best;
+}
+function fillGaps(cinema, occ, day, lineupIds){
+  cinema.screens.forEach((scr, si)=>{
+    gapsFor(occ, si, 95).forEach(([gs, ge])=>{
+      let t = gs, guard = 0;
+      while(ge - t >= 95 && guard++ < 8){
+        const cands = FILMS.filter(f=> !lineupIds.includes(f.id) && pd(f.release) <= day.date
+          && f.mins + PRE <= ge - t && (scr.type !== 'IMAX' || f.imax));
+        if(!cands.length) break;
+        const r = rng(hash(day.date + scr.name + t))();
+        const f = cands[Math.floor(r*cands.length)];
+        occ[si].push({s:t, e:t + f.mins + PRE, filmId:f.id, filler:true, cap:scr.cap});
+        t += f.mins + PRE + TURN;
+      }
+    });
+  });
+}
+function buildCinema(cinema){
+  const week = getWeek();
+  const ids = filmsFor(cinema.name);
+  const fcs = ids.map(id=>{ const f = getFilm(id); return {film:f, fc:forecastFor(f, cinema)}; });
+
+  const days = weekDates(week).map(d=>({dow:d.n, date:d.date, idx:d.idx, rows:[]}));
+
+  days.forEach((day, di)=>{
+    const occ = cinema.screens.map(()=>[]);
+    const order = fcs.map(x=>({...x, need: x.fc.days[di].shows}))
+      .sort((a,b)=> b.fc.days[di].admits - a.fc.days[di].admits);
+    order.forEach(t=>{
+      for(let k=0; k<t.need; k++){
+        const slot = bestSlot(cinema, occ, t.film, t.fc);
+        if(!slot) break;
+        occ[slot.si].push({s:slot.start, e:slot.start + t.film.mins + PRE, filmId:t.film.id, cap:cinema.screens[slot.si].cap});
+      }
+    });
+    // IMAX contract: the title must actually hold the IMAX room, once a day at least
+    const imaxSi = cinema.screens.findIndex(s=>s.type==='IMAX');
+    if(imaxSi >= 0){
+      order.filter(t=>t.fc.imaxOnly).forEach(t=>{
+        if(occ[imaxSi].some(x=>x.filmId === t.film.id)) return;
+        const slot = bestSlot(cinema, occ, t.film, t.fc, imaxSi);
+        if(slot) occ[imaxSi].push({s:slot.start, e:slot.start + t.film.mins + PRE, filmId:t.film.id, cap:cinema.screens[imaxSi].cap});
+      });
+    }
+    fillGaps(cinema, occ, day, ids);
+
+    // group by film across the whole building — occupancy is a property of the title's day,
+    // not of one screen, otherwise a 24-seat boutique looks like it holds all the demand
+    const dayByFilm = {};
+    occ.forEach(list=> list.forEach(x=>{ (dayByFilm[x.filmId] = dayByFilm[x.filmId] || []).push(x); }));
+
+    // per-film day admits, spread over that film's sessions by prime weight.
+    // a bigger house sells more of the same film, so re-scale from the forecast's average
+    // screen to the seats the scheduler actually gave it.
+    const dayAdmits = {};
+    fcs.forEach(x=>{
+      const base = x.fc.days[di].admits;
+      const assumed = x.fc.days[di].seats || 1;
+      const list = dayByFilm[x.film.id] || [];
+      const actual = list.reduce((a,y)=> a + (y.cap || 0), 0);
+      const ratio = actual > 0 ? Math.pow(actual/assumed, 0.8) : 1;
+      dayAdmits[x.film.id] = base * clamp(ratio, 0.70, 1.80);
+    });
+
+    const rows = [];
+
+    occ.forEach((list, si)=>{
+      const scr = cinema.screens[si];
+      list.forEach(x=>{
+        const rand = rng(hash(cinema.name + day.date + scr.name + x.s + x.filmId));
+        let sold;
+        if(x.filler){
+          sold = Math.round(scr.cap * (0.13 + rand()*0.40) * Math.min(1.22, primeWeight(x.s)));
+        }else{
+          // occupancy is derived from the film's day demand over the seats it actually holds,
+          // then varied by how good the slot is — so totals stay coherent instead of clamping
+          const same = dayByFilm[x.filmId];
+          const seats = same.reduce((a,y)=> a + (y.cap || scr.cap), 0) || scr.cap;
+          const wsum  = same.reduce((a,y)=> a + primeWeight(y.s), 0) || 1;
+          const occ   = Math.min(0.97, (dayAdmits[x.filmId] || 0) / seats);
+          const rel   = (primeWeight(x.s) / wsum) * same.length;
+          sold = Math.round(scr.cap * occ * rel * (0.94 + rand()*0.12));
+        }
+        rows.push({
+          id:'r'+(ROWID++), screen:scr.name, cap:scr.cap, type:scr.type,
+          filmId:x.filmId, start:x.s, end:x.e, status:x.filler?'Open':'Planned',
+          sold: Math.max(0, Math.min(sold, Math.round(scr.cap*0.98))),
+          mine: !x.filler
+        });
+      });
+    });
+    rows.sort((a,b)=> a.screen.localeCompare(b.screen,undefined,{numeric:true}) || a.start-b.start);
+    day.rows = rows;
+  });
+  return {cinema, days, films: ids};
+}
+function generate(){
+  if(state.user && state.user.role === 'Viewer'){ toast('Viewer role is read only'); return; }
+  if(!state.lineup.length){ toast('Pick at least one film first'); return; }
+  const targets = targetCinemas();
+  const list = targets.map(c=>buildCinema(c));
+  state.schedule = {cinemas:list, week:getWeek(), at:new Date()};
+  state.step = 'schedule';
+  if(!list.length || !list[0].days[state.dayIdx]) state.dayIdx = 0;
+  render();
+  toast(`Schedule generated — ${list.length} cinema${list.length>1?'s':''}`);
+}
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+/* storage can be blocked inside an iframe (opaque origin) — never let that break the login */
+function getStored(k){
+  try{ return sessionStorage.getItem(k) || localStorage.getItem(k); }catch(e){ return null; }
+}
+function setStored(k,v,persist){
+  try{ (persist ? localStorage : sessionStorage).setItem(k,v); }catch(e){}
+}
+function clearStored(k){
+  try{ localStorage.removeItem(k); }catch(e){}
+  try{ sessionStorage.removeItem(k); }catch(e){}
+}
+function boot(){
+  /* inside the review bundle the shell signs everyone in first — inherit that session */
+  try{
+    const inherited = (window.parent !== window && window.parent.tgvUser) || null;
+    if(inherited){ state.user = inherited; showApp(); return; }
+  }catch(e){}
+  const saved = getStored('tgv.user');
+  if(saved){
+    try{ state.user = JSON.parse(saved); showApp(); return; }catch(e){}
+  }
+  $('#login').classList.remove('hidden');
+}
+addEventListener('message', e=>{
+  if(!e.data || e.data.type !== 'tgv.user') return;
+  state.user = e.data.user;
+  if(state.user) showApp();
+  else{
+    $('#app').classList.add('hidden');
+    $('#login').classList.remove('hidden');
+    $('#lgpass').value = '';
+  }
+});
+$('#lgform').addEventListener('submit', e=>{
+  e.preventDefault();
+  const email = $('#lgemail').value.trim();
+  const pass  = $('#lgpass').value;
+  const role  = $('#lgrole').value;
+  const msg = $('#lgmsg');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    msg.textContent = 'Enter a valid staff email address.'; msg.classList.add('on');
+    $('#lgemail').classList.add('err'); $('#lgemail').focus(); return;
+  }
+  if(pass.length < 4){
+    msg.textContent = 'Password must be at least 4 characters.'; msg.classList.add('on');
+    $('#lgpass').classList.add('err'); $('#lgpass').focus(); return;
+  }
+  msg.classList.remove('on');
+  const name = email.split('@')[0].replace(/[._-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  state.user = {name, email, role, at:Date.now()};
+  setStored('tgv.user', JSON.stringify(state.user), $('#lgremember').checked);
+  showApp();
+  toast(`Signed in as ${name} · ${role}`);
+});
+$('#lgeye').addEventListener('click', ()=>{
+  const p = $('#lgpass');
+  p.type = p.type === 'password' ? 'text' : 'password';
+  $('#lgeye').textContent = p.type === 'password' ? '👁' : '🙈';
+});
+$('#lgforgot').addEventListener('click', e=>{
+  e.preventDefault();
+  const msg = $('#lgmsg');
+  msg.textContent = 'Password resets go through IT Service Desk — this is a prototype, so any password works.';
+  msg.classList.add('on');
+  msg.style.background = 'var(--blue-lt)'; msg.style.borderColor = '#D5E3F4'; msg.style.color = '#1B4C82';
+});
+function showApp(){
+  $('#login').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  const u = state.user;
+  $('#avini').textContent = u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  $('#avname').textContent = u.name;
+  $('#avrole').textContent = u.role;
+  $('#mname').textContent = u.name;
+  $('#mrole').textContent = u.email + ' · ' + u.role;
+  const ws = $('#weekSel');
+  ws.innerHTML = WEEKS.map(w=>`<option value="${w.id}" ${w.id===state.weekId?'selected':''}>${w.label} 2026</option>`).join('');
+  ws.onchange = e=>{ state.weekId = e.target.value; state.schedule = null; render(); };
+  $('#topweek').textContent = getWeek().label + ' 2026';
+  render();
+}
+function signOut(){
+  clearStored('tgv.user');
+  state.user = null; state.schedule = null;
+  $('#app').classList.add('hidden');
+  $('#login').classList.remove('hidden');
+  $('#lgpass').value = '';
+  $('#lgmsg').classList.remove('on');
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+const STEPS = [
+  {k:'titles',    n:'Create title', s:'Vista experiences'},
+  {k:'films',     n:'Films',     s:'Pick the slate'},
+  {k:'forecast',  n:'Forecast',  s:'Adjust all titles'},
+  {k:'ratings',   n:'Ratings',   s:"Everyone's input"},
+  {k:'locations', n:'Locations', s:'Where it plays'},
+  {k:'schedule',  n:'Schedule',  s:'24-hour grid'}
+];
+function renderStepper(){
+  const idx = STEPS.findIndex(s=>s.k===state.step);
+  $('#stepper').innerHTML = STEPS.map((s,i)=>{
+    const done = i < idx || (s.k==='schedule' && state.schedule);
+    const cls = i === idx ? 'on' : (done ? 'done' : '');
+    return `<button class="step ${cls}" data-act="step" data-v="${s.k}">
+      <span class="n">${done && i!==idx ? '✓' : ''}</span>
+      <span class="tx"><b>${s.n}</b><span>${s.s}</span></span>
+    </button>`;
+  }).join('');
+  $('#topweek').textContent = getWeek().label + ' 2026';
+  const rq = $('#ratingQuick'); if(rq) rq.classList.toggle('active', state.step==='ratings');
+  const tq = $('#titleQuick'); if(tq) tq.classList.toggle('active', state.step==='titles');
+}
+function render(){
+  if(!state.user) return;
+  renderStepper();
+  const st = $('#stage');
+  if(state.step === 'titles') st.innerHTML = viewTitles();
+  else if(state.step === 'films') st.innerHTML = viewFilms();
+  else if(state.step === 'forecast') st.innerHTML = viewForecast();
+  else if(state.step === 'ratings') st.innerHTML = viewRatings();
+  else if(state.step === 'locations') st.innerHTML = viewLocations();
+  else st.innerHTML = viewSchedule();
+  if(state.drawer) drawDrawer();
+}
+
+
+/* ============================================================
+   D3 - VISTA-STYLE TITLE CREATION (a title request precedes rating)
+   One generated title per ticked experience, e.g. [IMAX2D] DOOMSDAY
+   and [BEANIE] DOOMSDAY. Each is a first-class film: it joins the
+   slate, gets four attributed scores, drives the forecast and schedule.
+   ============================================================ */
+const EXPERIENCES = [
+  {id:'2d',      code:'2D',      label:'Standard 2D', hint:'Regular auditorium'},
+  {id:'imax2d',  code:'IMAX2D',  label:'IMAX',        hint:'IMAX 2D',           imax:true},
+  {id:'deluxe',  code:'DELUXE',  label:'Deluxe',      hint:'Deluxe premium hall'},
+  {id:'beanie',  code:'BEANIE',  label:'Beanie',      hint:'Beanie seats'},
+  {id:'junior',  code:'JUNIOR',  label:'Junior',      hint:'Junior / kids hall'},
+  {id:'indulge', code:'INDULGE', label:'Indulge',     hint:'Indulge dine-in'}
+];
+const expById = id => EXPERIENCES.find(e=>e.id===id);
+const slugify = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'title';
+const vistaTitle = (code,name) => '[' + code + '] ' + String(name).trim().toUpperCase();
+const ctName = () => String(state.ct.name || '').trim();
+
+function ctPreviewHTML(){
+  const name = ctName();
+  const picked = state.ct.exps.map(expById).filter(Boolean);
+  if(!name)       return '<div class="ct-empty">Type a film name to preview the Vista titles.</div>';
+  if(!picked.length) return '<div class="ct-empty">Tick at least one experience to generate titles.</div>';
+  return picked.map(e=>`<div class="ct-pv"><span class="ct-tag">${esc(e.code)}</span>
+      <b>${esc(vistaTitle(e.code,name))}</b><span class="ct-hint">${esc(e.label)}</span></div>`).join('');
+}
+function ctUpdatePreview(){
+  const el = $('#ctPreview'); if(el) el.innerHTML = ctPreviewHTML();
+}
+function ctSyncButton(){
+  const b = $('[data-act="ct-create"]');
+  if(b) b.textContent = 'Create ' + state.ct.exps.length + ' title' + (state.ct.exps.length===1?'':'s') + ' →';
+}
+function ctSetAll(on){
+  state.ct.exps = on ? EXPERIENCES.map(e=>e.id) : [];
+  $$('.ct-exp-box').forEach(b=>{
+    b.checked = on;
+    b.closest('.ct-exp').classList.toggle('on', on);
+  });
+  ctSyncButton(); ctUpdatePreview();
+}
+function initFilmState(f, tiltIdx){
+  state.scores[f.id] = seedStar(f.scores);
+  state.comps[f.id]  = f.comps.map(c=>({...c}));
+  state.rules[f.id]  = f.rules.map(r=>({...r, on:true}));
+  state.adj[f.id]    = 1;
+  state.loc[f.id]    = {mode:'all', list:[]};
+  const base = seedStar(f.scores);
+  const tilt = RATING_TILT[tiltIdx % RATING_TILT.length];
+  const rec = {};
+  PROGRAMMERS.forEach((p,j)=>{
+    rec[p.id] = {score:clampStar(base + tilt[j % PROGRAMMERS.length]), by:p.id, at:'just now'};
+  });
+  state.ratings[f.id] = rec;
+}
+function createTitles(){
+  if(state.user.role === 'Viewer'){ toast('Viewer role is read only'); return; }
+  const name = ctName();
+  if(!name){ toast('Enter a film name first'); return; }
+  const picked = state.ct.exps.map(expById).filter(Boolean);
+  if(!picked.length){ toast('Tick at least one experience'); return; }
+  const base = state.ct.film !== '__new__' ? getFilm(state.ct.film) : null;
+  const made = [];
+  picked.forEach(e=>{
+    const stem = slugify(name) + '-' + e.id;
+    let id = 'ct_' + stem, n = 2;
+    while(getFilm(id)){ id = 'ct_' + stem + '-' + (n++); }
+    const f = {
+      id,
+      title: vistaTitle(e.code, name),
+      plain: name.toUpperCase(),
+      expCode: e.code, expId: e.id, expName: e.label,
+      fromTitle: base ? base.id : null,
+      sub:'Title request', genre: base ? base.genre : 'New release',
+      lang: base ? base.lang : 'English', mins: base ? base.mins : 120,
+      rating: base ? base.rating : 'P13', dist: base ? base.dist : '—',
+      release: base ? base.release : getWeek().start,
+      c1: base ? base.c1 : PALETTE[hash(id) % PALETTE.length].h,
+      c2: base ? base.c2 : '#3B352C',
+      imax: e.imax ? 1 : (base ? base.imax : 0),
+      about: base ? base.about : 'Created from a title request for the ' + e.label + ' experience.',
+      comps: base ? base.comps.map(c=>({...c})) :
+        [{n:'Comparable A',sim:70,aps:40,idx:60},{n:'Comparable B',sim:60,aps:32,idx:55}],
+      scores: base ? {...base.scores} : {story:70,cast:70,heat:70,fit:70,ip:70},
+      rules: base ? base.rules.map(r=>({...r})) : []
+    };
+    FILMS.push(f);
+    initFilmState(f, FILMS.length - 1);
+    state.lineup.push(id);
+    state.created.push(id);
+    made.push(f.title);
+  });
+  syncConsensus();
+  state.schedule = null;
+  render();
+  toast('Created ' + made.length + ' Vista title' + (made.length===1?'':'s') + ' · ' + made[0]);
+}
+function removeTitle(id){
+  if(state.user.role === 'Viewer'){ toast('Viewer role is read only'); return; }
+  const i = FILMS.findIndex(f=>f.id===id);
+  if(i < 0) return;
+  FILMS.splice(i,1);
+  state.lineup  = state.lineup.filter(x=>x!==id);
+  state.created = state.created.filter(x=>x!==id);
+  ['scores','ratings','comps','rules','adj','loc'].forEach(k=>{ delete state[k][id]; });
+  if(state.drawer && state.drawer.id === id) state.drawer = null;
+  syncConsensus();
+  state.schedule = null;
+  render();
+  toast('Title removed');
+}
+
+/* ---------------- STEP 0: CREATE TITLE ---------------- */
+function viewTitles(){
+  const ro = state.user.role === 'Viewer';
+  const opts = `<option value="__new__" ${state.ct.film==='__new__'?'selected':''}>＋ Type a new film name…</option>` +
+    FILMS.filter(f=>!f.expCode).map(f=>
+      `<option value="${f.id}" ${state.ct.film===f.id?'selected':''}>${esc(f.title)}</option>`).join('');
+  const boxes = EXPERIENCES.map(e=>{
+    const on = state.ct.exps.includes(e.id);
+    return `<label class="ct-exp ${on?'on':''}" title="${esc(e.hint)}">
+      <input type="checkbox" class="ct-exp-box" value="${e.id}" ${on?'checked':''} ${ro?'disabled':''}/>
+      <span class="ct-box">✓</span>
+      <span class="ct-lab"><b>${esc(e.label)}</b><i>[${esc(e.code)}]</i></span>
+      <span class="ct-hint">${esc(e.hint)}</span>
+    </label>`;
+  }).join('');
+  const created = state.created.length ? state.created.map(id=>{
+    const f = getFilm(id); if(!f) return '';
+    return `<div class="ct-row">
+      <span class="ct-swatch" style="background:${colorOf(id).h}"></span>
+      <div class="ct-rowmain"><b>${esc(f.title)}</b>
+        <span>${esc(f.expName)} · ${esc(f.genre)} · consensus ★ ${filmAverage(id).toFixed(1)}</span></div>
+      <span class="ct-in">in slate</span>
+      ${ro ? '' : `<button class="btn ghost" data-act="ct-delete" data-v="${id}" title="Remove this title">Remove</button>`}
+    </div>`;
+  }).join('') : '<div class="ct-empty">No titles created yet. Pick the experiences and press Create to generate Vista-style titles.</div>';
+
+  return `
+  <div class="pghd">
+    <div class="l">
+      <h1>Create title · before rating</h1>
+      <p>Pick the film, then tick the experiences it plays in. One Vista-style title is generated per
+         experience — <b>[IMAX2D] DOOMSDAY</b>, <b>[BEANIE] DOOMSDAY</b> and so on. Every generated
+         title becomes a separate item programmers can rate.</p>
+    </div>
+    <div class="r">
+      <button class="btn ghost" data-act="step" data-v="films">Slate →</button>
+      <button class="btn ghost rating-quick" data-act="step" data-v="ratings">★ Film ratings</button>
+      <button class="btn dark" data-act="ct-create" ${ro?'disabled':''}>Create ${state.ct.exps.length} title${state.ct.exps.length===1?'':'s'} →</button>
+    </div>
+  </div>
+
+  <div class="banner" style="margin-bottom:14px;align-items:center">
+    <span>＋</span>
+    <div style="flex:1"><b>Title request comes first.</b> A film has to exist as a Vista title before
+      programmers can score it. Created titles join the slate and appear straight away in Forecast,
+      Overall ratings and the 24-hour schedule.</div>
+    <button class="btn ghost" data-act="step" data-v="ratings">See all ratings →</button>
+  </div>
+
+  <div class="ct-grid">
+    <div class="ct-panel">
+      <div class="ct-sec">Pick the film</div>
+      <label class="ct-field"><span>Film from library (optional)</span>
+        <select class="sel ct-sel" id="ctFilm" ${ro?'disabled':''}>${opts}</select></label>
+      <label class="ct-field"><span>Film name</span>
+        <input class="ct-input" id="ctName" type="text" value="${esc(ctName())}" placeholder="e.g. Doomsday" ${ro?'disabled':''}/></label>
+      <div class="ct-sec">Choose experiences <span class="ct-sec-note">tick any combination</span></div>
+      <div class="ct-tools">
+        <button class="btn ghost" data-act="ct-all" ${ro?'disabled':''}>Select all</button>
+        <button class="btn ghost" data-act="ct-none" ${ro?'disabled':''}>Clear</button>
+      </div>
+      <div class="ct-exps">${boxes}</div>
+      ${ro ? '<div class="warnband" style="margin-top:12px"><span>◐</span><div><b>Viewer access.</b> You can inspect existing titles but cannot create or remove them.</div></div>' : ''}
+    </div>
+
+    <div class="ct-panel ct-preview-panel">
+      <div class="ct-sec">Preview · Vista title format</div>
+      <div class="ct-preview" id="ctPreview">${ctPreviewHTML()}</div>
+      <div class="ct-note">Format: <b>[EXPERIENCE] FILM NAME</b>. Each line is a separate rateable
+        title with its own four programmer scores.</div>
+      <div class="ct-sec" style="margin-top:18px">Created titles <span class="ct-sec-note">${state.created.length} this session</span></div>
+      <div class="ct-list">${created}</div>
+    </div>
+  </div>`;
+}
+
+/* ---------------- STEP 1: FILMS ---------------- */
+function viewFilms(){
+  const sel = new Set(state.lineup);
+  const weekStart = pd(getWeek().start);
+  const cards = FILMS.map(f=>{
+    const on = sel.has(f.id);
+    const idx = Math.round(composite(state.scores[f.id]));
+    const v = verdict(idx);
+    const pre = pd(f.release) > weekStart;
+    return `<button class="fcard ${on?'on':''}" data-act="togglefilm" data-v="${f.id}">
+      <span class="tick">✓</span>
+      <div class="p" style="background:linear-gradient(150deg,${f.c1},${f.c2})"><span>${esc(f.plain ? f.plain.split(' ')[0] : f.title.split(' ')[0])}</span></div>
+      <div class="t">
+        <b>${esc(f.title)}</b>
+        <div class="g">${esc(f.genre)} · ${f.mins}m · ${esc(f.lang)}</div>
+        <div class="m"><span class="pill ${v.c}">${v.l}</span><span class="ix">★ ${(Number(state.scores[f.id])||0).toFixed(1)}</span>
+          ${pre ? '<span class="pill" style="background:var(--amber-lt);color:var(--amber)">Preview</span>' : ''}</div>
+      </div>
+      ${on ? `<span class="num">${state.lineup.indexOf(f.id)+1}</span>` : ''}
+    </button>`;
+  }).join('');
+
+  const chips = state.lineup.length ? state.lineup.map((id,i)=>{
+    const f = getFilm(id); const c = colorOf(id);
+    return `<span class="chip"><i style="background:${c.h}"></i>${esc(f.title)}<span class="x" data-act="unpick" data-v="${id}">×</span></span>`;
+  }).join('') : '<span style="font-size:11.5px;color:var(--dim)">Nothing selected yet — pick at least one film.</span>';
+
+  const totalAdmits = state.lineup.reduce((a,id)=>{
+    const c = targetCinemas()[0] || CINEMAS[0];
+    return a + forecastFor(getFilm(id), c).total.admits;
+  },0);
+
+  return `
+  <div class="pghd">
+    <div class="l">
+      <h1>This week's slate</h1>
+      <p>Every card shows the consensus ★ film rating from four programmers. Order sets the colour used across the forecast and schedule.</p>
+    </div>
+    <div class="r">
+      <button class="btn ghost" data-act="step" data-v="titles">＋ Create title</button>
+      <button class="btn ghost" data-act="presetlineup" data-v="wide">Wide week</button>
+      <button class="btn ghost" data-act="presetlineup" data-v="clear">Clear</button>
+      <button class="btn ghost rating-quick" data-act="step" data-v="ratings">★ Film ratings</button>
+      <button class="btn dark" data-act="step" data-v="forecast">Forecast ${state.lineup.length} film${state.lineup.length===1?'':'s'} →</button>
+    </div>
+  </div>
+
+  <div class="strip">${chips}</div>
+
+  <div class="banner" style="margin:0 0 10px;align-items:center">
+    <span>＋</span>
+    <div style="flex:1"><b>New titles are created before they are rated.</b> Use Create title to raise
+    Vista-style experience titles such as [IMAX2D] or [BEANIE] — each one is rated separately.</div>
+    <button class="btn dark" data-act="step" data-v="titles">Create title →</button>
+  </div>
+
+  <div class="banner rating-banner" style="margin:0 0 14px;align-items:center">
+    <span>★</span>
+    <div style="flex:1"><b>Film ratings are in.</b> Four programmers have submitted ${PROGRAMMERS.length*FILMS.length} attributed 0–5 scores across ${FILMS.length} films. Each card shows the consensus; open Overall ratings to see who scored what and edit an individual score.</div>
+    <button class="btn dark" data-act="step" data-v="ratings">Open Overall ratings →</button>
+  </div>
+
+  <div class="presets">
+    <span style="font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim2);align-self:center;margin-right:4px">Quick pick</span>
+    <button class="preset" data-act="presetlineup" data-v="holiday">School holiday week</button>
+    <button class="preset" data-act="presetlineup" data-v="local">Local-heavy</button>
+    <button class="preset" data-act="presetlineup" data-v="tentpole">Two tentpoles + support</button>
+    <button class="preset" data-act="presetlineup" data-v="holdover">Holdovers only</button>
+  </div>
+
+  <div class="filmgrid">${cards}</div>
+
+  <div class="banner" style="margin-top:16px">
+    <span>◆</span>
+    <div><b>${state.lineup.length} film${state.lineup.length===1?'':'s'}</b> in the slate. At ${esc((targetCinemas()[0]||CINEMAS[0]).name)} that projects
+    <b>${nf(totalAdmits)} admits</b> for the week before any rule is applied. Titles not in the slate still fill empty screen time
+    in the schedule, marked as open selling.</div>
+  </div>`;
+}
+
+/* ---------------- STEP 2: FORECAST ---------------- */
+function viewForecast(){
+  const targets = targetCinemas();
+  const ref = targets[0] || CINEMAS[0];
+  const rows = state.lineup.map(id=>{
+    const f = getFilm(id);
+    const fcs = targets.map(c=>forecastFor(f,c));
+    const admits = fcs.reduce((a,x)=>a+x.total.admits,0);
+    const shows  = fcs.reduce((a,x)=>a+x.total.shows,0);
+    const seats  = fcs.reduce((a,x)=>a+x.total.seats,0);
+    const rev    = fcs.reduce((a,x)=>a+x.total.revenue,0);
+    const idx = Math.round(composite(state.scores[f.id]));
+    const v = verdict(idx);
+    const c = colorOf(id);
+    const occ = seats ? admits/seats : 0;
+    const rules = (state.rules[id]||[]).filter(r=>r.on);
+    return {f, admits, shows, seats, rev, idx, v, c, occ, rules};
+  });
+  const T = rows.reduce((a,r)=>({admits:a.admits+r.admits, shows:a.shows+r.shows,
+    seats:a.seats+r.seats, rev:a.rev+r.rev}), {admits:0,shows:0,seats:0,rev:0});
+  const occ = T.seats ? T.admits/T.seats : 0;
+  const peak = Math.max(...rows.map(r=>r.admits), 1);
+
+  const body = rows.map(r=>`
+    <tr data-act="openfilm" data-v="${r.f.id}">
+      <td class="f"><span class="sw2" style="background:${r.c.h}"></span>${esc(r.f.title)}</td>
+      <td><span class="pill ${r.v.c}">${r.v.l}</span></td>
+      <td class="n">★ ${(Number(state.scores[r.f.id])||0).toFixed(1)}</td>
+      <td class="n">${nf(r.admits)}</td>
+      <td class="n">${r.shows}</td>
+      <td class="n oc ${r.occ>.45?'hi':r.occ>.3?'md':'lo'}">${Math.round(r.occ*100)}%</td>
+      <td class="n">${money(r.rev)}</td>
+      <td>${r.rules.length ? r.rules.map(x=>`<span class="tag" style="background:var(--line2);color:var(--ink2);font-size:9px;padding:1px 5px;border-radius:4px">${x.t}</span>`).join(' ') : '<span style="color:var(--dim2)">—</span>'}</td>
+      <td style="text-align:right"><button class="mini" data-act="openfilm" data-v="${r.f.id}">Adjust</button></td>
+    </tr>`).join('');
+
+  const bars = rows.map(r=>`
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:6px">
+      <span style="width:126px;font-size:10.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.f.title)}</span>
+      <div style="flex:1;height:16px;background:var(--line2);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${Math.max(2, r.admits/peak*100)}%;background:${r.c.h};border-radius:3px"></div>
+      </div>
+      <span style="width:52px;text-align:right;font-size:10px;font-variant-numeric:tabular-nums;color:var(--ink2)">${nf(r.admits)}</span>
+    </div>`).join('');
+
+  const role = state.user.role;
+  return `
+  <div class="pghd">
+    <div class="l">
+      <h1>Forecast — all ${rows.length} titles</h1>
+      <p>One table, every film — experience-prefixed Vista titles are separate rows. Each ★ score /5 is the consensus of all four programmers. Click a row to edit the selected programmer's star score, comparables or rules; open Overall ratings to compare every attributed input.</p>
+    </div>
+    <div class="r">
+      <span style="font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--dim2)">Outlook</span>
+      <div class="seg">
+        ${[['Conservative',0.85],['Base',1],['Optimistic',1.15]].map(([l,v])=>
+          `<button class="${state.scale===v?'on':''}" data-act="scale" data-v="${v}">${l}</button>`).join('')}
+      </div>
+      <button class="btn ghost" data-act="step" data-v="ratings">Overall ratings</button>
+      <button class="btn dark" data-act="step" data-v="locations">Locations →</button>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="k">Week admits</div><div class="v">${nf(T.admits)}</div><div class="f">${rows.length} titles · ${targets.length} cinema${targets.length>1?'s':''}</div></div>
+    <div class="kpi"><div class="k">Sessions</div><div class="v">${nf(T.shows)}</div><div class="f">across ${nf(T.seats)} seats</div></div>
+    <div class="kpi"><div class="k">Occupancy</div><div class="v">${Math.round(occ*100)}<small>%</small></div><div class="f">house target 38%</div></div>
+    <div class="kpi"><div class="k">Box office</div><div class="v">${money(T.rev)}</div><div class="f">at ${money(ref.atp)} ATP</div></div>
+  </div>
+
+  <div class="tblwrap">
+    <div class="tblscroll">
+      <table class="g">
+        <thead><tr>
+          <th>Film</th><th>Verdict</th><th class="n">Score /5</th><th class="n">Admits</th>
+          <th class="n">Sess.</th><th class="n">Occ.</th><th class="n">Box office</th><th>Rules</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${body}
+          <tr class="tot">
+            <td>Slate total</td><td></td><td class="n">—</td><td class="n">${nf(T.admits)}</td>
+            <td class="n">${T.shows}</td><td class="n">${Math.round(occ*100)}%</td><td class="n">${money(T.rev)}</td><td></td><td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="hd"><h3>Share of the week</h3><span class="hint">admits per title</span></div>
+    <div class="bd">${bars}</div>
+  </div>
+
+  ${role === 'Viewer' ? `<div class="warnband" style="margin-top:14px"><span>◐</span><div><b>Viewer access.</b> You can read the forecast and export it, but scores, rules and schedule edits are locked.</div></div>` : ''}`;
+}
+
+/* ---------------- STEP: EVERYONE'S RATINGS ---------------- */
+function viewRatings(){
+  const role = state.user.role;
+  const person = personOf(state.ratingAs);
+  const slate = FILMS.map(f=>({f, avg:filmAverage(f.id), spread:filmSpread(f.id)}));
+  const ranked = slate.slice().sort((a,b)=>b.avg-a.avg);
+  const slateAvg = slate.reduce((a,x)=>a+x.avg,0) / (slate.length || 1);
+  const widest = slate.slice().sort((a,b)=>b.spread-a.spread)[0];
+  const initials = n => n.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+
+  const progCards = PROGRAMMERS.map((p,pi)=>{
+    const vals = FILMS.map(f=>({f, score:ratingValue(f.id,p.id)}));
+    const avg = vals.reduce((a,x)=>a+x.score,0) / (vals.length || 1);
+    const delta = avg - slateAvg;
+    const ordered = vals.slice().sort((a,b)=>b.score-a.score);
+    const top = ordered[0], low = ordered[ordered.length-1];
+    const sparks = vals.map(x=>`<span class="rv-spark" style="--h:${Math.max(8,x.score/5*100)}%;--c:${PCOLORS[pi]}"
+      title="${esc(x.f.title)} · ★ ${x.score.toFixed(1)}"></span>`).join('');
+    const pick = (x,label)=> x ? `<div class="rv-pick"><i style="background:${PCOLORS[pi]}"></i>
+      <div><span>${label}</span><b>${esc(x.f.title)}</b></div><em>★ ${x.score.toFixed(1)}</em></div>` : '';
+    return `<div class="rv-prog">
+      <div class="rv-prog-hd">
+        <div class="rv-av" style="background:${PCOLORS[pi]}">${initials(p.name)}</div>
+        <div class="nm"><b>${esc(p.name)}</b><span>${esc(p.role)}</span></div>
+        <div class="cnt">${vals.length}/${FILMS.length}</div>
+      </div>
+      <div class="rv-avg"><b>${avg.toFixed(1)}</b><span>/ 5 avg</span>
+        <em style="color:${delta>=0?'var(--green)':'var(--amber)'}">${delta>=0?'▲':'▼'} ${Math.abs(delta).toFixed(2)} vs slate</em></div>
+      <div class="rv-sparks" title="One bar per film, in library order">${sparks}</div>
+      ${pick(top,'Highest')}${pick(low,'Lowest')}
+    </div>`;
+  }).join('');
+
+  const heatRows = ranked.map((r,i)=>{
+    const cells = PROGRAMMERS.map((p,pi)=>{
+      const val = ratingValue(r.f.id,p.id);
+      const tone = val>=4 ? 'hi' : val>=3 ? 'good' : val>=2 ? 'mid' : 'lo';
+      return `<td class="p ${tone}" data-act="ratecell" data-v="${r.f.id}|${p.id}"
+        title="${esc(p.name)} · ${esc(r.f.title)} · ★ ${val.toFixed(1)} · click to open this score">
+        <span class="rv-cell"><b>★ ${val.toFixed(1)}</b>
+          <span class="rv-meter"><i style="width:${val/5*100}%;background:${PCOLORS[pi]}"></i></span></span></td>`;
+    }).join('');
+    const info = consensusInfo(r.spread);
+    return `<tr>
+      <td class="f"><span class="rv-rank">${i+1}</span><span class="sw2" style="background:${colorOf(r.f.id).h}"></span>${esc(r.f.title)}</td>
+      ${cells}
+      <td class="n rv-cons"><b>${r.avg.toFixed(2)}</b><span>/5</span></td>
+      <td class="n">${r.spread.toFixed(1)}</td>
+      <td style="text-align:center"><span class="rv-agree ${info.cls}">${info.label}</span></td>
+    </tr>`;
+  }).join('');
+
+  const debates = ranked.slice().sort((a,b)=>b.spread-a.spread).slice(0,3).map(r=>{
+    const xs = PROGRAMMERS.map((p,pi)=>({p,pi,score:ratingValue(r.f.id,p.id)}))
+                          .sort((a,b)=>b.score-a.score);
+    const hi = xs[0], lo = xs[xs.length-1];
+    const dots = xs.map(x=>`<span class="rv-dot" style="left:${x.score/5*100}%;background:${PCOLORS[x.pi]}"
+      title="${esc(x.p.short)} · ★ ${x.score.toFixed(1)}"></span>`).join('');
+    return `<div class="rv-debate">
+      <div class="rv-poster" style="background:linear-gradient(150deg,${r.f.c1},${r.f.c2})"></div>
+      <div class="rv-debate-main">
+        <div class="t">${esc(r.f.title)}</div>
+        <div class="s">${r.spread.toFixed(1)} star spread · consensus ★ ${r.avg.toFixed(2)}</div>
+        <div class="rv-scale">${dots}</div>
+        <div class="rv-hilo"><b class="hi">High · ${esc(hi.p.short)} ★ ${hi.score.toFixed(1)}</b>
+          <b class="lo">Low · ${esc(lo.p.short)} ★ ${lo.score.toFixed(1)}</b></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="pghd">
+    <div class="l">
+      <h1>Overall ratings · everyone's input</h1>
+      <p>One place to compare all four programmers' attributed 0-5 scores. Titles created in step 1
+         are scored separately, so the [IMAX2D] and [BEANIE] versions of the same film each carry
+         four scores. The consensus is their mean, rounded to a half-star for the forecast.
+         Click any heatmap cell to open that person's score.</p>
+    </div>
+    <div class="r">
+      <button class="btn ghost" data-act="step" data-v="forecast">← Forecast</button>
+      <button class="btn dark" data-act="step" data-v="locations">Locations →</button>
+    </div>
+  </div>
+
+  <div class="rvbar">
+    <span class="lead">Rating as</span>
+    <div class="seg">${PROGRAMMERS.map(p=>
+      `<button class="${state.ratingAs===p.id?'on':''}" data-act="ratingas" data-v="${p.id}"
+         title="${esc(p.name)} · ${esc(p.role)}">${esc(p.short)}</button>`).join('')}</div>
+    <span class="who">${esc(person.name)} · ${esc(person.role)}</span>
+    <span class="tail">${PROGRAMMERS.length} people × ${FILMS.length} films · ${PROGRAMMERS.length*FILMS.length} attributed scores</span>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="k">Attributed ratings</div><div class="v">${PROGRAMMERS.length*FILMS.length}</div><div class="f">${PROGRAMMERS.length} programmers × ${FILMS.length} films</div></div>
+    <div class="kpi"><div class="k">Slate consensus</div><div class="v">${slateAvg.toFixed(2)}<small>/5</small></div><div class="f">Mean of all film averages</div></div>
+    <div class="kpi"><div class="k">Forecast demand</div><div class="v">${Math.round(slateAvg*20)}<small>/100</small></div><div class="f">Half-star consensus × 20</div></div>
+    <div class="kpi"><div class="k">Widest disagreement</div><div class="v">${widest?widest.spread.toFixed(1):'—'}<small>/5</small></div><div class="f">${widest?esc(widest.f.title):'No films'}</div></div>
+  </div>
+
+  <div class="rv-sec-t">Programmers at a glance <span>average, bias and their highest / lowest title</span></div>
+  <div class="rv-prog-grid">${progCards}</div>
+
+  <div class="rv-sec-t">All inputs · film × programmer <span>click a coloured cell to open and edit that score</span></div>
+  <div class="tblwrap">
+    <div class="tblscroll">
+      <table class="g rvheat">
+        <thead><tr><th>Film · ranked by consensus</th>
+          ${PROGRAMMERS.map((p,i)=>`<th class="p"><b style="color:${PCOLORS[i]}">${esc(p.short)}</b><br><span style="font-weight:500">${esc(p.role)}</span></th>`).join('')}
+          <th class="n">Consensus</th><th class="n">Spread</th><th class="p">Agreement</th>
+        </tr></thead>
+        <tbody>${heatRows}</tbody>
+      </table>
+    </div>
+  </div>
+  <div class="rv-legend">
+    <span><i style="background:#F1F9F5;border:1px solid var(--green-lt)"></i>4.0–5.0 Strong</span>
+    <span><i style="background:#F2F7FC;border:1px solid var(--blue-lt)"></i>3.0–3.5 Solid</span>
+    <span><i style="background:#FFF9ED;border:1px solid var(--amber-lt)"></i>2.0–2.5 Watch</span>
+    <span><i style="background:#FFF3F5;border:1px solid var(--red-lt)"></i>0–1.5 Low</span>
+  </div>
+
+  <div class="rv-sec-t">Where they disagree most <span>names the highest and lowest programmer per film</span></div>
+  <div class="rv-debate-grid">${debates}</div>
+
+  <p class="rv-help">Agreement uses the spread between the highest and lowest attributed star score:
+     Strong ≤ 0.5, Mixed ≤ 1.0, Split &gt; 1.0. Editing any person's score recalculates that film's
+     consensus and invalidates the generated schedule, so the forecast and schedule stay in sync.
+     ${role==='Viewer' ? 'Viewer access is read only; you can inspect every attributed score but cannot change it.' : ''}</p>
+
+  ${role === 'Viewer' ? `<div class="warnband" style="margin-top:12px"><span>◐</span><div><b>Viewer access.</b> All ratings are visible, but the star control and other schedule edits are locked.</div></div>` : ''}`;
+}
+
+/* ---------------- STEP 3: LOCATIONS ---------------- */
+function viewLocations(){
+  const targets = targetCinemas();
+  const targetNames = targets.map(c=>c.name);
+  const rank = autoRank();
+  const maxA = rank[0] ? rank[0].perScreen : 1;
+
+  const modeCards = [
+    {k:'single', ic:'◉', t:'One cinema',   p:'Everything plays here. Best when you are programming a single site.'},
+    {k:'multi',  ic:'▤', t:'Pick cinemas', p:'Choose the sites by hand. Same slate goes to every one you tick.'},
+    {k:'auto',   ic:'✦', t:'Follow demand',p:'The system ranks all nine sites by projected demand and takes the top N.'}
+  ].map(m=>`
+    <button class="mode ${state.mode===m.k?'on':''}" data-act="mode" data-v="${m.k}">
+      <span class="radio"></span>
+      <div class="ic">${m.ic}</div>
+      <b>${m.t}</b><p>${m.p}</p>
+    </button>`).join('');
+
+  const cgrid = rank.map((r,i)=>{
+    const on = targetNames.includes(r.cinema.name);
+    const pct = Math.max(2, r.perScreen/maxA*100);
+    return `<button class="citem ${on?'on':''}" data-act="toggcinema" data-v="${r.cinema.name}">
+      <span class="cb">✓</span>
+      <span class="nm">
+        <b>${esc(r.cinema.name)}</b>
+        <span>${r.cinema.screens.length} screens · ${nf(r.cinema.total)} seats</span>
+        <span style="display:block;height:3px;background:var(--line2);border-radius:2px;margin-top:4px;overflow:hidden">
+          <span style="display:block;height:100%;width:${pct}%;background:${on?'var(--red)':'#CFCAC2'}"></span>
+        </span>
+      </span>
+      <span class="adm">${nf(r.perScreen)}<em>PER SCREEN</em></span>
+    </button>`;
+  }).join('');
+
+  // per-film permissions
+  const perm = state.lineup.map(id=>{
+    const f = getFilm(id);
+    const l = state.loc[id];
+    const bad = targets.filter(c=>!allowedIn(f, c.name)).length;
+    return `<tr>
+      <td class="f"><span class="sw2" style="background:${colorOf(id).h}"></span>${esc(f.title)}</td>
+      <td>
+        <div class="seg" style="padding:1px">
+          ${[['all','All sites'],['only','Only…'],['not','Except…']].map(([k,lab])=>
+            `<button class="${l.mode===k?'on':''}" style="padding:3px 8px;font-size:9.5px" data-act="locmode" data-v="${id}|${k}">${lab}</button>`).join('')}
+        </div>
+      </td>
+      <td style="color:var(--dim);font-size:10.5px">
+        ${l.mode==='all' ? (targets.length===1 ? 'plays at the only targeted site' : `plays in all ${targets.length} sites`) :
+          (l.list.length ? l.list.join(', ') : 'no sites chosen yet')}
+      </td>
+      <td class="n ${bad?'':'oc md'}">${bad ? '−'+bad : 'ok'}</td>
+    </tr>`;
+  }).join('');
+
+  const totalAdmits = targets.reduce((a,c)=>a + state.lineup.reduce((x,id)=>
+    allowedIn(getFilm(id), c.name) ? x + forecastFor(getFilm(id), c).total.admits : x, 0), 0);
+
+  return `
+  <div class="pghd">
+    <div class="l">
+      <h1>Target location</h1>
+      <p>Location is two decisions: <b>which sites</b> run the slate, and <b>which titles are allowed where</b>. Distributor locks and wajib-tayang obligations live in the second one.</p>
+    </div>
+    <div class="r">
+      <button class="btn dark" data-act="gen">Generate schedule →</button>
+    </div>
+  </div>
+
+  <div class="modes">${modeCards}</div>
+
+  ${state.mode==='auto' ? `
+    <div class="warnband">
+      <span>✦</span>
+      <div><b>Following demand.</b> Sites are ranked by <b>admits per screen</b> for this slate — not by size.
+      A big site that only fills a third of its seats ranks below a smaller one that sells out.
+      Top <b>${state.autoN}</b> are taken.
+      <span style="display:inline-flex;gap:4px;margin-left:8px;vertical-align:middle">
+        ${[1,2,3,4,5].map(n=>`<button class="mini" style="${n===state.autoN?'background:var(--ink);color:#fff;border-color:var(--ink)':''}" data-act="auton" data-v="${n}">${n}</button>`).join('')}
+      </span></div>
+    </div>` : ''}
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="hd">
+      <h3>${state.mode==='auto' ? 'Demand ranking — all sites' : 'Cinemas'}</h3>
+      <span class="hint">${targets.length} selected · ${nf(totalAdmits)} admits projected</span>
+    </div>
+    <div class="bd"><div class="cgrid">${cgrid}</div></div>
+  </div>
+
+  <div class="tblwrap">
+    <div class="tblscroll">
+      <table class="g">
+        <thead><tr><th>Film</th><th>Location rule</th><th>Where it plays</th><th class="n">Blocked</th></tr></thead>
+        <tbody>${perm}</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="banner" style="margin-top:14px">
+    <span>◆</span>
+    <div><b>Why this matters.</b> A title that only clears 9 admits a session should not be spread across 12 halls — it burns screen time.
+    <i>Only…</i> is how a distributor lock is expressed; <i>Except…</i> is how you keep a wajib-tayang title out of a site that cannot support it.</div>
+  </div>`;
+}
+
+/* ---------------- STEP 4: SCHEDULE ---------------- */
+function viewSchedule(){
+  if(!state.schedule){
+    return `<div class="pghd"><div class="l"><h1>Schedule</h1>
+      <p>Nothing generated yet for ${esc(getWeek().label)}.</p></div></div>
+      <div class="card"><div class="empty">Press <b>Generate schedule</b> in the top bar to build the week from your slate, forecast and locations.</div></div>`;
+  }
+  const S = state.schedule;
+  const ci = clamp(state.ci || 0, 0, S.cinemas.length-1);
+  state.ci = ci;
+  const block = S.cinemas[ci];
+  const cinema = block.cinema;
+  const day = block.days[state.dayIdx] || block.days[0];
+
+  const mine = day.rows.filter(r=>r.mine);
+  const admits = day.rows.reduce((a,r)=>a+r.sold,0);
+  const seats = day.rows.reduce((a,r)=>a+r.cap,0);
+  const occ = seats ? admits/seats : 0;
+
+  const tabs = block.days.map((d,i)=>
+    `<button class="day ${i===state.dayIdx?'on':''}" data-act="day" data-v="${i}">
+      ${d.dow}<b>${d.date.getDate()}</b></button>`).join('');
+
+  const cinTabs = S.cinemas.length > 1 ? `
+    <select class="sel" id="cinPick" style="height:29px">
+      ${S.cinemas.map((c,i)=>`<option value="${i}" ${i===ci?'selected':''}>${esc(c.cinema.name)}</option>`).join('')}
+    </select>` : `<span style="font-size:11px;font-weight:650;color:var(--ink2)">${esc(cinema.name)}</span>`;
+
+  return `
+  <div class="pghd">
+    <div class="l">
+      <h1>${esc(cinema.name)} · ${fmtLong(day.date)}</h1>
+      <p>${day.rows.length} sessions on ${cinema.screens.length} screens · ${nf(admits)} admits · ${Math.round(occ*100)}% occupancy.
+      Click a row to edit it. Drag it onto another session to switch their time slots, or use the small ▲▼ buttons on each row. A short drag nudges the start by 5 minutes.</p>
+    </div>
+    <div class="r">
+      <div class="seg">
+        <button class="${state.view==='timeline'?'on':''}" data-act="view" data-v="timeline">Timeline</button>
+        <button class="${state.view==='table'?'on':''}" data-act="view" data-v="table">Table</button>
+      </div>
+      <button class="btn ghost" data-act="exportopen">⤓ Export</button>
+      <button class="btn ghost" data-act="gen">↻ Regenerate</button>
+    </div>
+  </div>
+
+  <div class="schedbar">
+    ${cinTabs}
+    <div class="days">${tabs}</div>
+    <div style="flex:1"></div>
+    <span style="font-size:10px;color:var(--dim)">24-hour day ${hhmm(OPEN)} → ${hhmmEnd(CLOSE)} · drag onto a row to switch slots</span>
+  </div>
+
+  ${state.view==='timeline' ? timeline(block, day) : table(block, day)}
+  ${legend(block)}`;
+}
+function timeline(block, day){
+  const step = 60/SPAN*100;
+  const axisParts = [];
+  for(let h = OPEN; h < CLOSE; h += 120){
+    const p = (h-OPEN)/SPAN*100;
+    const nd = h >= 1440;
+    const st = p < 3 ? 'left:0;transform:none' : `left:${p}%`;
+    axisParts.push(`<span class="${nd?'nd':''}" style="${st}">${pad2(Math.floor(h/60)%24)}:00</span>`);
+  }
+  const axis = axisParts.join('');
+
+  const rows = block.cinema.screens.map(scr=>{
+    const list = day.rows.filter(r=>r.screen===scr.name);
+    const blocks = list.map(r=>{
+      const f = getFilm(r.filmId);
+      const c = colorOf(r.filmId);
+      const left = clamp((r.start-OPEN)/SPAN*100, 0, 100);
+      const width = clamp((Math.min(r.end,CLOSE)-r.start)/SPAN*100, 0.4, 100-left);
+      const wpx = width/100*760;
+      return `<div class="blk ${r.mine?'':'filler'}" data-act="row" data-v="${r.id}"
+        style="left:${left}%;width:${width}%;background:${r.mine?c.t:'#F2F0EC'};border-left-color:${r.mine?c.h:'#C9C3B9'}"
+        title="${esc(f.title)} · ${hhmm(r.start)}–${hhmm(r.end)} · ${r.sold}/${r.cap} sold">
+        <b>${esc(f.title)}</b>
+        ${wpx > 52 ? `<span>${hhmm(r.start)} · ${r.sold}</span>` : ''}
+      </div>`;
+    }).join('');
+    return `<div class="tlrow">
+      <div class="lbl2"><b>${esc(scr.name)}</b><span>${scr.cap} seats</span></div>
+      <div class="track" style="background-image:linear-gradient(to right,var(--line2) 1px,transparent 1px);background-size:${step}% 100%">${blocks}</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="tl">
+    <div class="tlhead"><div class="lbl2">Screen</div><div class="axis">${axis}</div></div>
+    <div class="tlbody">${rows}</div>
+  </div>`;
+}
+function table(block, day){
+  const byScreen = {};
+  day.rows.forEach(r=>{ (byScreen[r.screen] = byScreen[r.screen] || []).push(r); });
+  let body = '';
+  block.cinema.screens.forEach(scr=>{
+    const list = (byScreen[scr.name]||[]).sort((a,b)=>a.start-b.start);
+    if(!list.length){
+      body += `<tr><td class="scr" style="font-weight:600">${esc(scr.name)}</td><td colspan="7" style="color:var(--dim2)">no sessions</td></tr>`;
+      return;
+    }
+    list.forEach((r,i)=>{
+      const f = getFilm(r.filmId);
+      const c = colorOf(r.filmId);
+      body += `<tr data-act="row" data-v="${r.id}" data-id="${r.id}" style="${r.mine?'background:'+c.t:''}">
+        <td style="font-weight:600">${i===0?esc(scr.name):''}</td>
+        <td class="f"><span class="sw2" style="background:${c.h}"></span>${esc(f.title)}</td>
+        <td><span class="tval">${hhmm(r.start)}</span><span class="swp"><button data-act="swap" data-v="${r.id}" data-dir="-1" title="Switch with the session above">▲</button><button data-act="swap" data-v="${r.id}" data-dir="1" title="Switch with the session below">▼</button></span></td><td>${hhmm(r.end)}</td>
+        <td><span class="tag" style="background:${r.mine?'var(--blue-lt)':'var(--green-lt)'};color:${r.mine?'var(--blue)':'var(--green)'};font-size:9px;padding:1px 5px;border-radius:4px">${r.status}</span></td>
+        <td class="n">${r.sold}</td><td class="n">${r.cap}</td>
+        <td class="n oc ${r.sold/r.cap>.45?'hi':r.sold/r.cap>.3?'md':'lo'}">${Math.round(r.sold/r.cap*100)}%</td>
+      </tr>`;
+    });
+    const sold = list.reduce((a,r)=>a+r.sold,0), cap = list.reduce((a,r)=>a+r.cap,0);
+    body += `<tr class="sub" style="background:#FBFAF8"><td colspan="5" style="font-size:10px;color:var(--dim);font-weight:600">${esc(scr.name)} — subtotal</td>
+      <td class="n" style="font-weight:700;font-size:10.5px">${sold}</td><td class="n" style="font-size:10.5px">${cap}</td>
+      <td class="n" style="font-size:10.5px;color:var(--dim)">${Math.round(sold/cap*100)}%</td></tr>`;
+  });
+  const tot = day.rows.reduce((a,r)=>({s:a.s+r.sold, c:a.c+r.cap}), {s:0,c:0});
+  body += `<tr class="tot"><td colspan="5">Day total · ${day.rows.length} sessions</td>
+    <td class="n">${nf(tot.s)}</td><td class="n">${nf(tot.c)}</td>
+    <td class="n">${Math.round(tot.s/tot.c*100)}%</td></tr>`;
+
+  return `<div class="tblwrap"><div class="tblscroll">
+    <table class="g" style="min-width:760px">
+      <thead><tr><th>Screen</th><th>Film</th><th>Showing</th><th>Finishing</th><th>Status</th>
+      <th class="n">Sold</th><th class="n">Capacity</th><th class="n">Occ.</th></tr></thead>
+      <tbody>${body}</tbody>
+    </table>
+  </div></div>`;
+}
+function legend(block){
+  const items = state.lineup.map(id=>{
+    const f = getFilm(id);
+    return `<span><i style="background:${colorOf(id).h}"></i>${esc(f.title)}</span>`;
+  }).join('');
+  return `<div class="legend">${items}<span style="margin-left:auto"><i style="background:#D9D5CE"></i>Other titles (open selling)</span></div>`;
+}
+
+/* ============================================================
+   DRAWERS
+   ============================================================ */
+function openDrawer(){ $('#scrim').classList.add('on'); $('#drawer').classList.add('on'); }
+function closeDrawer(){ $('#scrim').classList.remove('on'); $('#drawer').classList.remove('on'); state.drawer = null; state.editing = null; }
+function drawDrawer(){
+  const d = state.drawer; if(!d) return;
+  if(d.type === 'film') drawFilm(d.id);
+  else if(d.type === 'sess') drawSess(d.id);
+  openDrawer();
+}
+function drawFilm(id){
+  const f = getFilm(id);
+  const c = colorOf(id);
+  const idx = Math.round(composite(state.scores[id]));
+  const v = verdict(idx);
+  const sc = state.scores[id];
+  const comps = state.comps[id];
+  const anchor = anchorOf(comps);
+  const fc = forecastFor(f, targetCinemas()[0] || CINEMAS[0]);
+  const rules = state.rules[id];
+  const l = state.loc[id];
+  const lock = state.user.role === 'Viewer';
+
+  const starVal = Number(sc)||0;
+  const person = personOf(state.ratingAs);
+  const personalVal = ratingValue(id, person.id);
+  const starsBlock = starHTML(personalVal);
+
+  const cmpRows = comps.map((cmp,i)=>`
+    <div class="cmprow">
+      <div class="h"><span class="nm">${esc(cmp.n)}</span>
+        <button class="x" data-act="delcmp" data-v="${id}|${i}">×</button></div>
+      <div class="f">
+        <input type="range" min="0" max="100" value="${cmp.sim}" data-cmp="${i}" style="--p:${cmp.sim}%" />
+        <span class="p">${cmp.sim}%</span><span class="a">${cmp.aps} APS</span>
+      </div>
+    </div>`).join('');
+
+  const ruleRows = rules.map((r,i)=>{
+    const T = RULE_TYPES[r.t];
+    let ctl = '';
+    if(T.kind==='num') ctl = `<input type="number" value="${r.v}" data-rule="${i}" />`;
+    if(T.kind==='time') ctl = `<input type="time" value="${r.v}" data-rule="${i}" />`;
+    if(T.kind==='date') ctl = `<input type="date" value="${r.v}" data-rule="${i}" />`;
+    return `<div class="rule ${r.on?'':'off'}">
+      <div class="body"><div class="txt">${T.say(r.v)}</div></div>
+      <div class="ctl">
+        ${ctl}
+        <button class="sw ${r.on?'on':''}" data-act="togglerule" data-v="${id}|${i}"></button>
+        <button class="rm" data-act="delrule" data-v="${id}|${i}">×</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const presets = Object.keys(PRESETS).map(k=>
+    `<button data-act="applypreset" data-v="${id}|${k}">${k}</button>`).join('');
+
+  const avail = Object.keys(RULE_TYPES).filter(k=>!rules.some(r=>r.t===k));
+  const addBtns = avail.map(k=>`<button class="addrule" data-act="addrule" data-v="${id}|${k}">+ ${RULE_TYPES[k].label}</button>`).join('');
+
+  const locBtns = CINEMAS.map(cn=>{
+    const on = l.list.includes(cn.name);
+    return `<button class="citem ${on?'on':''}" style="padding:6px 8px" data-act="locpick" data-v="${id}|${cn.name}">
+      <span class="cb">✓</span><span class="nm"><b style="font-size:10.5px">${esc(cn.name)}</b></span>
+    </button>`;
+  }).join('');
+
+  $('#drawer').innerHTML = `
+    <div class="hd">
+      <div class="p" style="width:34px;height:48px;border-radius:4px;background:linear-gradient(150deg,${f.c1},${f.c2});flex-shrink:0"></div>
+      <div class="t"><h3>${esc(f.title)}</h3><div class="s">${esc(f.genre)} · ${f.mins}m · ${esc(f.dist)}</div></div>
+      <button class="x" data-act="closedrawer">×</button>
+    </div>
+    <div class="bd">
+      <div class="sect" style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:26px;font-weight:750;letter-spacing:-1px;line-height:1" id="d3hdval">${starVal.toFixed(1)}</div>
+        <span style="font-size:12px;color:var(--dim);font-weight:600">/5 consensus</span>
+        <span class="pill ${v.c}" id="d3verdict">${v.l}</span>
+        <div style="flex:1"></div>
+        <div style="text-align:right">
+          <div style="font-size:9px;color:var(--dim2);font-weight:700;letter-spacing:.5px">WEEK AT ${esc((targetCinemas()[0]||CINEMAS[0]).name.toUpperCase())}</div>
+          <div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">${nf(fc.total.admits)} admits</div>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="lbl">${esc(person.name)}'s score <span style="text-transform:none;letter-spacing:0;font-weight:500">${lock?'read only':'click to rate · half-star steps'}</span></div>
+        <div class="starrow"><span class="sf" id="d3starval">${personalVal.toFixed(1)}</span><span class="so">/ 5</span></div>
+        <div class="stars ${lock?'locked':''}" id="d3stars" data-act="stars" data-v="${id}" title="Click to set ${esc(person.short)}'s 0–5 star score (half-steps)">${starsBlock}</div>
+        <div class="rv-consensus-note">Attributed to <b>${esc(person.short)}</b> · ${esc(state.ratings[id] && state.ratings[id][person.id] ? state.ratings[id][person.id].at : 'not set')}<br>
+          Raw consensus ★ ${filmAverage(id).toFixed(2)} / 5 · forecast uses ★ ${starVal.toFixed(1)} / 5 (nearest half-star).</div>
+        <div style="font-size:10px;color:var(--dim);margin-top:9px" id="d3anchor">Comparable anchor ${Math.round(anchor.aps)} APS · ${Math.round(anchor.idx)} index → lift ×${fc.lift.toFixed(2)}</div>
+      </div>
+
+      <div class="sect">
+        <div class="lbl">Comparables <span style="text-transform:none;letter-spacing:0;font-weight:500">similarity drives the anchor</span></div>
+        <div class="cmp">${cmpRows}</div>
+        <button class="addrule" data-act="addcmp" data-v="${id}">+ Add comparable</button>
+      </div>
+
+      <div class="sect">
+        <div class="lbl">Distributor rules</div>
+        <div class="presets2">${presets}</div>
+        ${ruleRows || '<div class="note">No rules. This title will be sized purely by demand.</div>'}
+        <div class="addrow">${addBtns}</div>
+      </div>
+
+      <div class="sect">
+        <div class="lbl">Location rule</div>
+        <div class="seg" style="margin-bottom:8px">
+          ${[['all','All sites'],['only','Only these'],['not','Except these']].map(([k,lab])=>
+            `<button class="${l.mode===k?'on':''}" data-act="locmode" data-v="${id}|${k}">${lab}</button>`).join('')}
+        </div>
+        ${l.mode === 'all' ? '<div class="note">Plays at every targeted site.</div>'
+          : `<div class="cgrid" style="grid-template-columns:1fr 1fr;gap:5px">${locBtns}</div>`}
+      </div>
+
+      <div class="sect">
+        <div class="lbl">Manual adjustment</div>
+        <div class="dim">
+          <div class="r"><span>Demand adjustment</span><b>${Math.round(state.adj[id]*100)}%</b></div>
+          <input type="range" min="50" max="150" step="5" value="${Math.round(state.adj[id]*100)}"
+            data-adj="1" style="--p:${(state.adj[id]-0.5)/1*100}%" />
+        </div>
+        <div class="note">Use when the model disagrees with you — a preview, a local event, a star visit. Applies to this title only.</div>
+      </div>
+    </div>
+    <div class="ft">
+      <button class="btn ghost" data-act="resetfilm" data-v="${id}">Reset</button>
+      <button class="btn red" data-act="closedrawer">Done</button>
+    </div>`;
+}
+function drawSess(rowId){
+  const S = state.schedule; if(!S) return;
+  const block = S.cinemas[state.ci || 0];
+  const day = block.days[state.dayIdx];
+  const row = day.rows.find(r=>r.id === rowId); if(!row) return;
+  const f = getFilm(row.filmId);
+  const cinema = block.cinema;
+
+  const filmOpts = FILMS.filter(x=>pd(x.release) <= day.date)
+    .map(x=>`<option value="${x.id}" ${x.id===row.filmId?'selected':''}>${esc(x.title)} (${x.mins}m)</option>`).join('');
+  const scrOpts = cinema.screens.map(s=>
+    `<option value="${s.name}" ${s.name===row.screen?'selected':''}>${esc(s.name)} — ${s.cap} seats</option>`).join('');
+
+  const blockLen = f.mins + PRE;
+  const others = day.rows.filter(r=>r.id!==row.id && r.screen===row.screen);
+  const clashes = others.filter(r=> !(row.start + blockLen + TURN <= r.start || row.start >= r.end + TURN));
+
+  const fc = forecastFor(f, cinema);
+
+  $('#drawer').innerHTML = `
+    <div class="hd">
+      <div class="t"><h3>Edit session</h3><div class="s">${esc(cinema.name)} · ${fmtLong(day.date)}</div></div>
+      <button class="x" data-act="closedrawer">×</button>
+    </div>
+    <div class="bd">
+      <div class="fld"><label>Film</label><select id="ef">${filmOpts}</select></div>
+      <div class="fld"><label>Screen</label><select id="es">${scrOpts}</select></div>
+      <div class="fld"><label>Start time</label>
+        <div class="timewrap">
+          <button data-act="nudge" data-v="-15">−</button>
+          <select id="et">${TIME_SLOTS.map(m=>
+            `<option value="${m}" ${m===row.start?'selected':''}>${hhmm(m)}</option>`).join('')}</select>
+          <button data-act="nudge" data-v="15">+</button>
+        </div>
+      </div>
+      <div class="fld"><label>Status</label>
+        <select id="est">
+          ${['Planned','Open','House rental','Closed','Preview'].map(s=>`<option ${s===row.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="note" style="margin-bottom:10px">
+        <b>${esc(f.title)}</b> runs ${f.mins}m → finishes <b id="fin">${hhmm(row.start+blockLen)}</b>.
+        ${row.cap} seats · ${row.sold} sold.
+      </div>
+      <div id="sesswarn">${sessWarn(row, f, fc, cinema)}</div>
+    </div>
+    <div class="ft">
+      <button class="btn del" data-act="delsess">Delete</button>
+      <button class="btn ghost" data-act="dupsess">Duplicate</button>
+      <button class="btn red" data-act="savesess" id="savess" ${clashes.length?'disabled':''}>${clashes.length?'Resolve overlap':'Save'}</button>
+    </div>`;
+}
+/* recompute overlap + rule breaches from the live inputs */
+function sessWarn(row, f, fc, cinema){
+  const start = toMin($('#et') ? $('#et').value : hhmm(row.start));
+  const screen = $('#es') ? $('#es').value : row.screen;
+  const len = f.mins + PRE;
+  const day = state.schedule.cinemas[state.ci||0].days[state.dayIdx];
+  const clashes = day.rows.filter(r=> r.id!==row.id && r.screen===screen &&
+    !(start + len + TURN <= r.start || start >= r.end + TURN));
+  const breaks = [];
+  if(fc.noEarly !== null && start < fc.noEarly) breaks.push(`Starts before <b>${hhmm(fc.noEarly)}</b> — your own no-early rule`);
+  if(fc.imaxOnly && (cinema.screens.find(s=>s.name===screen)||{}).type !== 'IMAX')
+    breaks.push('IMAX contract is on, but this is not the IMAX screen');
+  if(start + len > CLOSE) breaks.push(`Finishes after <b>${hhmm(CLOSE)}</b> — past the operating close`);
+
+  const btn = $('#savess');
+  if(btn){
+    btn.disabled = clashes.length > 0;
+    btn.textContent = clashes.length ? 'Resolve overlap' : 'Save';
+  }
+  return (clashes.length ? `<div class="warnbox"><b>Overlaps ${clashes.length} session${clashes.length>1?'s':''} on ${esc(screen)}:</b><br>
+      ${clashes.map(c=>`${esc(getFilm(c.filmId).title)} ${hhmm(c.start)}–${hhmm(c.end)}`).join('<br>')}
+      <br><br>Move the time or pick another screen before saving.</div>` : '')
+    + (breaks.length ? `<div class="softbox">${breaks.join('<br>')}<br><br>You can still save — this is your call.</div>` : '');
+}
+function refreshSess(){
+  const row = currentRow(); if(!row) return;
+  const f = getFilm($('#ef').value);
+  const cinema = state.schedule.cinemas[state.ci||0].cinema;
+  const fc = forecastFor(f, cinema);
+  const box = $('#sesswarn');
+  if(box) box.innerHTML = sessWarn(row, f, fc, cinema);
+  const fin = $('#fin');
+  if(fin) fin.textContent = hhmm(toMin($('#et').value) + f.mins + PRE);
+  const note = $('#drawer .note');
+  if(note) note.innerHTML = `<b>${esc(f.title)}</b> runs ${f.mins}m → finishes <b id="fin">${hhmm(toMin($('#et').value)+f.mins+PRE)}</b>. ${row.cap} seats · ${row.sold} sold.`;
+}
+function currentRow(){
+  const S = state.schedule; if(!S || !state.editing) return null;
+  const day = S.cinemas[state.ci||0].days[state.dayIdx];
+  return day.rows.find(r=>r.id === state.editing.id);
+}
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+function exportOpts(){
+  return [
+    {k:'forecast', t:'Film forecast', s:'One row per title — index, admits, sessions, occupancy, box office, rules.', tag:'CSV'},
+    {k:'sessions', t:'Session schedule', s:'Every session for the chosen scope — screen, film, start, finish, status, sold.', tag:'CSV'},
+    {k:'summary',  t:'Screen summary',   s:'Per screen and per day totals — the sheet you hand to the duty manager.', tag:'CSV'},
+    {k:'image',    t:'Schedule image',   s:'A PNG of the timeline as it looks on screen. Drops into a deck or a WhatsApp.', tag:'PNG'},
+    {k:'print',    t:'Print / PDF',      s:'Opens the print dialog with the schedule laid out on paper.', tag:'PDF'}
+  ];
+}
+function openExport(){
+  const S = state.schedule;
+  const cin = S ? S.cinemas[state.ci||0].cinema.name : (targetCinemas()[0]||CINEMAS[0]).name;
+  const e = state.exp;
+  const opts = exportOpts().map(o=>`
+    <button class="exopt ${e[o.k]?'on':''}" data-act="exptoggle" data-v="${o.k}">
+      <span class="cb">✓</span>
+      <span class="t"><b>${o.t}</b><span>${o.s}</span><em>${o.tag}</em></span>
+    </button>`).join('');
+
+  $('#modalbox').innerHTML = `
+    <div class="hd"><h3>Export</h3><button class="x" data-act="exportclose">×</button></div>
+    <div class="bd">
+      <div class="expscope">
+        <span class="lbl">Scope</span>
+        <select class="sel" id="expCin" style="height:28px">
+          ${(S ? S.cinemas.map(c=>c.cinema.name) : [cin]).map(n=>
+            `<option ${n===cin?'selected':''}>${esc(n)}</option>`).join('')}
+        </select>
+        <select class="sel" id="expDay" style="height:28px">
+          <option value="all" ${state.expDay==='all'?'selected':''}>Whole week</option>
+          ${(S ? S.cinemas[0].days : weekDates(getWeek())).map((d,i)=>
+            `<option value="${i}" ${String(state.expDay)===String(i)?'selected':''}>${d.dow} ${d.date.getDate()}</option>`).join('')}
+        </select>
+      </div>
+      <div class="exgrid">${opts}</div>
+      <div class="expreview" id="expreview"></div>
+    </div>
+    <div class="ft">
+      <span class="sp"></span>
+      <button class="btn ghost" data-act="exportclose">Cancel</button>
+      <button class="btn red" data-act="exportrun" id="dlbtn">Download</button>
+    </div>`;
+  $('#modal').classList.add('on');
+  previewExport();
+}
+function previewExport(){
+  const el = $('#expreview'); if(!el) return;
+  const e = state.exp;
+  const keys = Object.keys(e).filter(k=>e[k]);
+  if(!keys.length){
+    el.innerHTML = `<div class="h"><span>Nothing selected</span></div><div class="b">Pick at least one file.</div>`;
+    return;
+  }
+  const cur = keys.includes(state.expPrev) ? state.expPrev
+            : (keys.includes('image') ? 'image' : keys[0]);
+  const labels = {forecast:'forecast.csv', sessions:'sessions.csv', summary:'summary.csv', image:'schedule.png', print:'print / pdf'};
+  const tabs = keys.map(k=>`<button class="${k===cur?'on':''}" data-act="expprev" data-v="${k}">${labels[k]}</button>`).join('');
+
+  let body = '', meta = '';
+  if(cur === 'forecast'){
+    const csv = forecastCSV();
+    meta = `${state.lineup.length} titles`;
+    body = `<div class="b">${esc(csv.split('\n').slice(0,7).join('\n'))}</div>`;
+  } else if(cur === 'sessions'){
+    const csv = sessionsCSV();
+    meta = `${csv.split('\n').length-1} rows`;
+    body = `<div class="b">${esc(csv.split('\n').slice(0,8).join('\n'))}</div>`;
+  } else if(cur === 'summary'){
+    const csv = summaryCSV();
+    meta = `${csv.split('\n').length-1} rows`;
+    body = `<div class="b">${esc(csv.split('\n').slice(0,8).join('\n'))}</div>`;
+  } else if(cur === 'image'){
+    meta = 'PNG · 1600 px wide';
+    body = `<img src="${schedulePNG()}" alt="schedule preview" />`;
+  } else {
+    meta = 'A4 landscape';
+    body = `<div class="b">One page per day, headed with the cinema, week and totals.\nOpens the browser print dialog — choose "Save as PDF" to keep a copy.</div>`;
+  }
+  el.innerHTML = `<div class="h"><div class="exptabs">${tabs}</div><span>${meta}</span></div>${body}`;
+
+  const btn = $('#dlbtn');
+  if(btn){
+    const n = keys.filter(k=>k!=='print').length;
+    btn.textContent = n > 1 ? `Download ${n} files (.zip)` : n === 1 ? 'Download' : 'Print';
+  }
+}
+function dl(name, text, mime){
+  const blob = new Blob([text], {type:mime || 'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+}
+function dlBytes(name, u8, mime){
+  const blob = new Blob([u8], {type: mime || 'application/octet-stream'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+}
+/* --- minimal store-only ZIP so a multi-file export is one download --- */
+const CRC_TABLE = (()=>{
+  const t = new Uint32Array(256);
+  for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = (c&1) ? (0xEDB88320 ^ (c>>>1)) : (c>>>1); t[n]=c>>>0; }
+  return t;
+})();
+function crc32(u8){
+  let c = 0xFFFFFFFF;
+  for(let i=0;i<u8.length;i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c>>>8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function b64ToU8(b64){
+  const bin = atob(b64), u = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) u[i] = bin.charCodeAt(i);
+  return u;
+}
+function makeZip(files){
+  const enc = new TextEncoder();
+  const parts = [], central = [];
+  let offset = 0;
+  const dt = new Date();
+  const dosTime = ((dt.getHours()<<11) | (dt.getMinutes()<<5) | (dt.getSeconds()>>1)) & 0xFFFF;
+  const dosDate = (((dt.getFullYear()-1980)<<9) | ((dt.getMonth()+1)<<5) | dt.getDate()) & 0xFFFF;
+
+  files.forEach(f=>{
+    const nameBytes = enc.encode(f.name);
+    const data = f.data;
+    const crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true);
+    lh.setUint16(4, 20, true);
+    lh.setUint16(6, 0x0800, true);
+    lh.setUint16(8, 0, true);
+    lh.setUint16(10, dosTime, true);
+    lh.setUint16(12, dosDate, true);
+    lh.setUint32(14, crc, true);
+    lh.setUint32(18, data.length, true);
+    lh.setUint32(22, data.length, true);
+    lh.setUint16(26, nameBytes.length, true);
+    lh.setUint16(28, 0, true);
+    parts.push(new Uint8Array(lh.buffer), nameBytes, data);
+
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true);
+    ch.setUint16(4, 20, true);
+    ch.setUint16(6, 20, true);
+    ch.setUint16(8, 0x0800, true);
+    ch.setUint16(10, 0, true);
+    ch.setUint16(12, dosTime, true);
+    ch.setUint16(14, dosDate, true);
+    ch.setUint32(16, crc, true);
+    ch.setUint32(20, data.length, true);
+    ch.setUint32(24, data.length, true);
+    ch.setUint16(28, nameBytes.length, true);
+    ch.setUint32(42, offset, true);
+    central.push(new Uint8Array(ch.buffer), nameBytes);
+    offset += 30 + nameBytes.length + data.length;
+  });
+
+  const cdStart = offset;
+  let cdSize = 0;
+  central.forEach(p=> cdSize += p.length);
+  const eocd = new DataView(new ArrayBuffer(22));
+  eocd.setUint32(0, 0x06054b50, true);
+  eocd.setUint16(8, files.length, true);
+  eocd.setUint16(10, files.length, true);
+  eocd.setUint32(12, cdSize, true);
+  eocd.setUint32(16, cdStart, true);
+
+  const all = [...parts, ...central, new Uint8Array(eocd.buffer)];
+  let total = 0;
+  all.forEach(p=> total += p.length);
+  const out = new Uint8Array(total);
+  let o = 0;
+  all.forEach(p=>{ out.set(p, o); o += p.length; });
+  return out;
+}
+function csvCell(v){ const s = String(v ?? ''); return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }
+function csvLine(arr){ return arr.map(csvCell).join(','); }
+
+function forecastCSV(){
+  const week = getWeek();
+  const targets = targetCinemas();
+  const head = ['Week','Cinema(s)','Film','Distributor','Language','Runtime','Rating','Score /5','Admits','Sessions','Seats','Occupancy %','Box office RM','Rules'];
+  const lines = [csvLine(head)];
+  state.lineup.forEach(id=>{
+    const f = getFilm(id);
+    const fcs = targets.map(c=>forecastFor(f,c));
+    const admits = fcs.reduce((a,x)=>a+x.total.admits,0);
+    const shows  = fcs.reduce((a,x)=>a+x.total.shows,0);
+    const seats  = fcs.reduce((a,x)=>a+x.total.seats,0);
+    const rev    = fcs.reduce((a,x)=>a+x.total.revenue,0);
+    lines.push(csvLine([week.id, targets.map(c=>c.name).join(' / '), f.title, f.dist, f.lang,
+      f.mins, f.rating, (Number(state.scores[id])||0).toFixed(1), Math.round(admits), shows,
+      Math.round(seats), seats?Math.round(admits/seats*100):0, Math.round(rev),
+      (state.rules[id]||[]).filter(r=>r.on).map(r=>r.t).join(' ')]));
+  });
+  return '\uFEFF' + lines.join('\r\n');
+}
+function scopeDay(){
+  const S = state.schedule;
+  if(!S || state.expDay === 'all' || state.expDay === undefined) return null;
+  return Number(state.expDay);
+}
+function sessionsCSV(){
+  const S = state.schedule;
+  if(!S) return '\uFEFF' + csvLine(['Week','Cinema','Date','Day','Screen','Film','Start','Finish','Status','Sold','Capacity','Occ %']) + '\r\n';
+  const cinName = $('#expCin') ? $('#expCin').value : S.cinemas[state.ci||0].cinema.name;
+  const block = S.cinemas.find(c=>c.cinema.name === cinName) || S.cinemas[0];
+  const dsel = scopeDay();
+  const lines = [csvLine(['Week','Cinema','Date','Day','Screen','Film','Start','Finish','Status','Sold','Capacity','Occ %'])];
+  block.days.forEach((day,i)=>{
+    if(dsel !== null && i !== dsel) return;
+    const iso = day.date.toISOString().slice(0,10);
+    day.rows.slice().sort((a,b)=> a.screen.localeCompare(b.screen,undefined,{numeric:true}) || a.start-b.start)
+      .forEach(r=>{
+        lines.push(csvLine([getWeek().id, block.cinema.name, iso, day.dow, r.screen,
+          getFilm(r.filmId).title, hhmm(r.start), hhmm(r.end), r.status, r.sold, r.cap,
+          Math.round(r.sold/r.cap*100)]));
+      });
+  });
+  return '\uFEFF' + lines.join('\r\n');
+}
+function summaryCSV(){
+  const S = state.schedule;
+  if(!S) return '\uFEFF' + csvLine(['Screen','Sessions','Sold','Capacity','Occ %']) + '\r\n';
+  const cinName = $('#expCin') ? $('#expCin').value : S.cinemas[state.ci||0].cinema.name;
+  const block = S.cinemas.find(c=>c.cinema.name === cinName) || S.cinemas[0];
+  const dsel = scopeDay();
+  const lines = [csvLine(['Week','Cinema','Day','Screen','Sessions','Sold','Capacity','Occ %'])];
+  block.days.forEach((day,i)=>{
+    if(dsel !== null && i !== dsel) return;
+    block.cinema.screens.forEach(scr=>{
+      const list = day.rows.filter(r=>r.screen===scr.name);
+      if(!list.length) return;
+      const sold = list.reduce((a,r)=>a+r.sold,0), cap = list.reduce((a,r)=>a+r.cap,0);
+      lines.push(csvLine([getWeek().id, block.cinema.name, day.dow, scr.name, list.length, sold, cap,
+        Math.round(sold/cap*100)]));
+    });
+  });
+  return '\uFEFF' + lines.join('\r\n');
+}
+
+/* canvas PNG of the timeline */
+function schedulePNG(){
+  const S = state.schedule;
+  const canvas = document.createElement('canvas');
+  const block = S ? (S.cinemas[state.ci||0]) : null;
+  if(!block){ canvas.width = 800; canvas.height = 300; return canvas.toDataURL(); }
+  const day = block.days[state.dayIdx];
+  const screens = block.cinema.screens;
+  const W = 1600, PAD = 26, LBL = 190, TOP = 132, ROW = 40, FOOT = 64;
+  const H = TOP + screens.length*ROW + FOOT;
+  const DPR = 2;
+  canvas.width = W*DPR; canvas.height = H*DPR;
+  const g = canvas.getContext('2d');
+  g.scale(DPR,DPR);
+  g.fillStyle = '#FFFFFF'; g.fillRect(0,0,W,H);
+
+  // header
+  g.fillStyle = '#E4002B'; g.fillRect(0,0,W,6);
+  g.fillStyle = '#16150F'; g.font = '700 22px Inter, Segoe UI, sans-serif';
+  g.fillText(block.cinema.name, PAD, 52);
+  g.fillStyle = '#8B847A'; g.font = '600 13px Inter, Segoe UI, sans-serif';
+  g.fillText(`Week ${getWeek().label}  ·  ${fmtLong(day.date)}  ·  ${day.rows.length} sessions`, PAD, 74);
+  const tot = day.rows.reduce((a,r)=>({s:a.s+r.sold, c:a.c+r.cap}), {s:0,c:0});
+  g.textAlign = 'right';
+  g.fillStyle = '#16150F'; g.font = '700 20px Inter, Segoe UI, sans-serif';
+  g.fillText(nf(tot.s) + ' admits', W-PAD, 50);
+  g.fillStyle = '#8B847A'; g.font = '600 12px Inter, Segoe UI, sans-serif';
+  g.fillText(`${Math.round(tot.s/tot.c*100)}% occupancy · ${nf(tot.c)} seats`, W-PAD, 70);
+  g.textAlign = 'left';
+
+  const X0 = PAD + LBL, XW = W - X0 - PAD;
+  const px = m => X0 + (m-OPEN)/SPAN*XW;
+
+  // hour grid + labels
+  for(let h = OPEN; h <= CLOSE; h += 60){
+    const x = px(h);
+    g.strokeStyle = '#F0EEE9'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(x, TOP-16); g.lineTo(x, TOP + screens.length*ROW); g.stroke();
+    if((h - OPEN) % 120 === 0 && x < W - PAD - 26){
+      g.fillStyle = h >= 1440 ? '#E4002B' : '#AFA89E';
+      g.font = '600 10px Inter, Segoe UI, sans-serif'; g.textAlign = 'center';
+      g.fillText(pad2(Math.floor(h/60)%24) + ':00', x, TOP-22);
+      g.textAlign = 'left';
+    }
+  }
+
+  screens.forEach((scr, i)=>{
+    const y = TOP + i*ROW;
+    if(i % 2 === 0){ g.fillStyle = '#FCFBFA'; g.fillRect(PAD, y, W-PAD*2, ROW); }
+    g.fillStyle = '#4B4740'; g.font = '600 11px Inter, Segoe UI, sans-serif';
+    g.fillText(scr.name, PAD+2, y + 17);
+    g.fillStyle = '#AFA89E'; g.font = '500 9px Inter, Segoe UI, sans-serif';
+    g.fillText(scr.cap + ' seats', PAD+2, y + 30);
+    g.strokeStyle = '#F2F0EC'; g.beginPath(); g.moveTo(PAD, y+ROW); g.lineTo(W-PAD, y+ROW); g.stroke();
+
+    day.rows.filter(r=>r.screen===scr.name).forEach(r=>{
+      const x1 = px(r.start), x2 = px(Math.min(r.end, CLOSE));
+      const c = colorOf(r.filmId);
+      const h = ROW - 10;
+      g.fillStyle = r.mine ? c.t : '#F2F0EC';
+      roundRect(g, x1+1, y+5, Math.max(6, x2-x1-2), h, 3); g.fill();
+      g.fillStyle = r.mine ? c.h : '#C9C3B9';
+      g.fillRect(x1+1, y+5, 3, h);
+      if(x2-x1 > 46){
+        g.save();
+        g.beginPath(); g.rect(x1+6, y+4, x2-x1-9, h); g.clip();
+        g.fillStyle = r.mine ? '#16150F' : '#6B655C';
+        g.font = '700 9.5px Inter, Segoe UI, sans-serif';
+        g.fillText(getFilm(r.filmId).title, x1+7, y+17);
+        g.fillStyle = '#8B847A'; g.font = '500 8.5px Inter, Segoe UI, sans-serif';
+        g.fillText(`${hhmm(r.start)} · ${r.sold}/${r.cap}`, x1+7, y+29);
+        g.restore();
+      }
+    });
+  });
+
+  // footer
+  const fy = TOP + screens.length*ROW + 26;
+  g.strokeStyle = '#E8E6E2'; g.beginPath(); g.moveTo(PAD, fy-14); g.lineTo(W-PAD, fy-14); g.stroke();
+  g.fillStyle = '#8B847A'; g.font = '500 10px Inter, Segoe UI, sans-serif';
+  g.fillText('TGV Programming · generated ' + new Date().toLocaleString('en-GB'), PAD, fy+4);
+  g.textAlign = 'right';
+  g.fillText('24-hour day ' + hhmm(OPEN) + ' → ' + hhmmEnd(CLOSE), W-PAD, fy+4);
+  return canvas.toDataURL('image/png');
+}
+function roundRect(g,x,y,w,h,r){
+  g.beginPath();
+  g.moveTo(x+r,y); g.lineTo(x+w-r,y); g.quadraticCurveTo(x+w,y,x+w,y+r);
+  g.lineTo(x+w,y+h-r); g.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  g.lineTo(x+r,y+h); g.quadraticCurveTo(x,y+h,x,y+h-r);
+  g.lineTo(x,y+r); g.quadraticCurveTo(x,y,x+r,y); g.closePath();
+}
+function pngDownload(){
+  const url = schedulePNG();
+  const a = document.createElement('a');
+  const S = state.schedule;
+  const nm = S ? S.cinemas[state.ci||0].cinema.name.replace(/\W+/g,'-') : 'schedule';
+  a.href = url; a.download = `TGV-${nm}-${getWeek().id}.png`; a.click();
+}
+function printSchedule(){
+  const S = state.schedule;
+  if(!S){ toast('Generate a schedule first'); return; }
+  const block = S.cinemas[state.ci||0];
+  const day = block.days[state.dayIdx];
+  const rows = day.rows.slice().sort((a,b)=> a.screen.localeCompare(b.screen,undefined,{numeric:true}) || a.start-b.start)
+    .map(r=>`<tr><td>${esc(r.screen)}</td><td>${esc(getFilm(r.filmId).title)}</td>
+      <td>${hhmm(r.start)}</td><td>${hhmm(r.end)}</td><td>${r.status}</td>
+      <td class="n">${r.sold}</td><td class="n">${r.cap}</td><td class="n">${Math.round(r.sold/r.cap*100)}%</td></tr>`).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(block.cinema.name)} ${day.dow}</title>
+  <style>body{font-family:'Segoe UI',system-ui,sans-serif;font-size:10px;color:#16150F;padding:18px}
+  h1{font-size:16px;margin:0 0 2px}h2{font-size:10px;font-weight:500;color:#8B847A;margin:0 0 14px}
+  table{width:100%;border-collapse:collapse}th{background:#F7F6F4;text-align:left;padding:5px 7px;font-size:8.5px;
+  letter-spacing:.5px;text-transform:uppercase;color:#8B847A;border-bottom:1px solid #E8E6E2}
+  td{padding:4px 7px;border-bottom:1px solid #F2F0EC}.n{text-align:right}
+  .bar{height:4px;background:#E4002B;margin-bottom:14px}</style></head><body>
+  <div class="bar"></div><h1>${esc(block.cinema.name)}</h1>
+  <h2>Week ${getWeek().label} · ${fmtLong(day.date)} · ${day.rows.length} sessions</h2>
+  <table><thead><tr><th>Screen</th><th>Film</th><th>Showing</th><th>Finishing</th><th>Status</th>
+  <th class="n">Sold</th><th class="n">Capacity</th><th class="n">Occ.</th></tr></thead><tbody>${rows}</tbody></table>
+  </body></html>`;
+  const ifr = document.createElement('iframe');
+  ifr.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+  document.body.appendChild(ifr);
+  const doc = ifr.contentWindow.document;
+  doc.open(); doc.write(html); doc.close();
+  setTimeout(()=>{ ifr.contentWindow.focus(); ifr.contentWindow.print(); setTimeout(()=>ifr.remove(), 1500); }, 300);
+}
+function runExport(){
+  const e = state.exp;
+  const keys = Object.keys(e).filter(k=>e[k] && k !== 'print');
+  const wantsPrint = e.print;
+  if(!keys.length && !wantsPrint){ toast('Select at least one file'); return; }
+
+  const cin = $('#expCin') ? $('#expCin').value : '';
+  const tag = (cin || 'cinema').replace(/\W+/g,'-');
+  const dsel = scopeDay();
+  const dayTag = dsel === null ? 'week' : 'd' + (dsel+1);
+  const enc = new TextEncoder();
+  const files = [];
+
+  if(e.forecast) files.push({name:`forecast-${getWeek().id}.csv`, data: enc.encode(forecastCSV()), mime:'text/csv'});
+  if(e.sessions) files.push({name:`sessions-${tag}-${dayTag}.csv`, data: enc.encode(sessionsCSV()), mime:'text/csv'});
+  if(e.summary)  files.push({name:`screen-summary-${tag}-${dayTag}.csv`, data: enc.encode(summaryCSV()), mime:'text/csv'});
+  if(e.image)    files.push({name:`schedule-${tag}-${dayTag}.png`, data: b64ToU8(schedulePNG().split(',')[1]), mime:'image/png'});
+
+  if(files.length === 1){
+    dlBytes(files[0].name, files[0].data, files[0].mime);
+    toast(`Exported ${files[0].name}`);
+  } else if(files.length > 1){
+    const zip = makeZip(files.map(f=>({name:f.name, data:f.data})));
+    dlBytes(`TGV-export-${getWeek().id}.zip`, zip, 'application/zip');
+    toast(`Exported ${files.length} files in one zip`);
+  }
+  if(wantsPrint) setTimeout(printSchedule, 600);
+  $('#modal').classList.remove('on');
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+document.addEventListener('click', ev=>{
+  if(performance.now() < (window.__d3SuppressUntil || 0)) return;
+  const el = ev.target.closest('[data-act]');
+  if(!el) return;
+  const act = el.dataset.act, v = el.dataset.v;
+
+  if(act === 'step'){ state.step = v; closeDrawer(); render(); window.scrollTo({top:0}); return; }
+  if(act === 'avmenu'){ $('#avmenu').classList.toggle('on'); return; }
+  if(act === 'signout'){ $('#avmenu').classList.remove('on'); signOut(); return; }
+  if(act === 'gosettings'){ $('#avmenu').classList.remove('on'); toast('Preferences — not in this prototype'); return; }
+  if(act === 'closedrawer'){ closeDrawer(); return; }
+
+
+  if(act === 'ct-create'){ createTitles(); return; }
+  if(act === 'ct-delete'){ removeTitle(v); return; }
+  if(act === 'ct-all'){ ctSetAll(true); return; }
+  if(act === 'ct-none'){ ctSetAll(false); return; }
+
+  if(act === 'togglefilm'){
+    const i = state.lineup.indexOf(v);
+    if(i >= 0) state.lineup.splice(i,1); else state.lineup.push(v);
+    state.schedule = null; render(); return;
+  }
+  if(act === 'unpick'){
+    state.lineup = state.lineup.filter(x=>x!==v); state.schedule = null; render(); return;
+  }
+  if(act === 'presetlineup'){
+    const map = {
+      holiday:['kudrat','clayface','sf','petaka','always','henry'],
+      local:['kudrat','petaka','godskin','always','kabaddi','udta'],
+      tentpole:['kudrat','sf','jailer','whale','petaka'],
+      holdover:['always','udta','kabaddi','godskin'],
+      wide:['kudrat','clayface','sf','jailer','whale','petaka','always','udta','kabaddi','godskin'],
+      clear:[]
+    };
+    state.lineup = map[v] ? [...map[v]] : state.lineup;
+    state.schedule = null; render(); return;
+  }
+  if(act === 'openfilm'){ state.drawer = {type:'film', id:v}; drawDrawer(); return; }
+  if(act === 'ratingas'){ state.ratingAs = v; render(); return; }
+  if(act === 'ratecell'){
+    const [fid, pid] = v.split('|');
+    state.ratingAs = pid;
+    state.drawer = {type:'film', id:fid};
+    render(); return;
+  }
+  if(act === 'scale'){ state.scale = Number(v); state.schedule = null; render(); return; }
+  if(act === 'stars'){
+    const sv = ev.target.dataset.star;
+    if(sv === undefined) return;
+    if(state.user.role === 'Viewer'){ toast('Viewer role is read only'); return; }
+    setRating(el.dataset.v, state.ratingAs, Number(sv));
+    state.schedule = null;
+    render(); return;
+  }
+
+  if(act === 'mode'){
+    state.mode = v;
+    if(v === 'single') state.cinemas = [state.cinemas[0] || CINEMAS[0].name];
+    if(v === 'multi' && !state.cinemas.length) state.cinemas = [CINEMAS[0].name];
+    state.schedule = null; render(); return;
+  }
+  if(act === 'toggcinema'){
+    const i = state.cinemas.indexOf(v);
+    if(i >= 0){
+      if(state.cinemas.length === 1){ toast('Keep at least one cinema'); return; }
+      state.cinemas.splice(i,1);
+    } else {
+      if(state.mode === 'single'){ state.cinemas = [v]; }
+      else state.cinemas.push(v);
+    }
+    state.schedule = null; render(); return;
+  }
+  if(act === 'auton'){ state.autoN = Number(v); state.schedule = null; render(); return; }
+  if(act === 'locmode'){
+    const [id, m] = v.split('|');
+    state.loc[id].mode = m;
+    if(m === 'all') state.loc[id].list = [];
+    state.schedule = null; render(); return;
+  }
+  if(act === 'locpick'){
+    const [id, cn] = v.split('|');
+    const l = state.loc[id];
+    const i = l.list.indexOf(cn);
+    if(i >= 0) l.list.splice(i,1); else l.list.push(cn);
+    state.schedule = null; render(); return;
+  }
+
+  if(act === 'gen'){ generate(); return; }
+  if(act === 'day'){ state.dayIdx = Number(v); render(); return; }
+  if(act === 'view'){ state.view = v; render(); return; }
+  if(act === 'swap'){
+    if(state.user.role === 'Viewer'){ toast('Viewer role is read only'); return; }
+    const S = state.schedule; if(!S) return;
+    const block = S.cinemas[state.ci || 0], day = block.days[state.dayIdx];
+    const ordered = [];
+    block.cinema.screens.forEach(scr=>{
+      day.rows.filter(r=>r.screen===scr.name).sort((a,b)=>a.start-b.start).forEach(r=>ordered.push(r));
+    });
+    const i = ordered.findIndex(r=>r.id===v), j = i + Number(el.dataset.dir);
+    if(i < 0 || j < 0 || j >= ordered.length){ toast('No session to switch with'); return; }
+    const a=ordered[i], b=ordered[j], ad=a.end-a.start, bd=b.end-b.start, as=a.start;
+    a.start = clamp(b.start, OPEN, CLOSE-ad); a.end = a.start + ad;
+    b.start = clamp(as,     OPEN, CLOSE-bd); b.end = b.start + bd;
+    render(); const of = getFilm(b.filmId); toast('Switched with ' + (of?of.title:'session')); return;
+  }
+  if(act === 'row'){
+    if(state.user.role === 'Viewer'){ toast('Viewer role is read only'); return; }
+    state.drawer = {type:'sess', id:v};
+    state.editing = {id:v};
+    drawDrawer(); return;
+  }
+
+  if(act === 'addcmp'){ state.comps[v].push({n:'New comparable', sim:50, aps:30, idx:50}); drawDrawer(); return; }
+  if(act === 'delcmp'){ const [id,i] = v.split('|'); state.comps[id].splice(Number(i),1); drawDrawer(); return; }
+  if(act === 'addrule'){
+    const [id,k] = v.split('|');
+    const T = RULE_TYPES[k];
+    state.rules[id].push({t:k, v:T.def ?? null, on:true});
+    state.schedule = null; drawDrawer(); return;
+  }
+  if(act === 'delrule'){ const [id,i] = v.split('|'); state.rules[id].splice(Number(i),1); state.schedule=null; drawDrawer(); return; }
+  if(act === 'togglerule'){ const [id,i] = v.split('|'); state.rules[id][Number(i)].on = !state.rules[id][Number(i)].on; state.schedule=null; drawDrawer(); return; }
+  if(act === 'applypreset'){
+    const [id,k] = v.split('|');
+    state.rules[id] = PRESETS[k].map(r=>({...r, on:true}));
+    state.schedule = null; drawDrawer(); return;
+  }
+  if(act === 'resetfilm'){
+    const f = getFilm(v);
+    resetRatingsFor(v);
+    state.comps[v] = f.comps.map(c=>({...c}));
+    state.rules[v] = f.rules.map(r=>({...r, on:true}));
+    state.adj[v] = 1;
+    state.schedule = null; drawDrawer(); return;
+  }
+
+  if(act === 'nudge'){
+    const sel = $('#et'); if(!sel) return;
+    const i = TIME_SLOTS.indexOf(Number(sel.value));
+    const j = clamp((i < 0 ? 0 : i) + Number(v)/15, 0, TIME_SLOTS.length-1);
+    sel.value = String(TIME_SLOTS[j]);
+    refreshSess();
+    return;
+  }
+  if(act === 'savesess'){
+    const row = currentRow(); if(!row) return;
+    const block = state.schedule.cinemas[state.ci||0];
+    const day = block.days[state.dayIdx];
+    const filmId = $('#ef').value, screen = $('#es').value;
+    const start = toMin($('#et').value), status = $('#est').value;
+    const f = getFilm(filmId);
+    const clash = day.rows.some(r=> r.id!==row.id && r.screen===screen &&
+      !(start + f.mins + PRE + TURN <= r.start || start >= r.end + TURN));
+    if(clash){ toast('Resolve the overlap first'); return; }
+    row.filmId = filmId; row.screen = screen; row.start = start;
+    row.end = start + f.mins + PRE; row.status = status;
+    row.cap = (block.cinema.screens.find(s=>s.name===screen)||{cap:100}).cap;
+    row.sold = Math.min(row.sold, row.cap);
+    row.mine = state.lineup.includes(filmId);
+    closeDrawer(); render(); toast('Session updated'); return;
+  }
+  if(act === 'delsess'){
+    const row = currentRow(); if(!row) return;
+    const block = state.schedule.cinemas[state.ci||0];
+    const day = block.days[state.dayIdx];
+    day.rows = day.rows.filter(r=>r.id !== row.id);
+    closeDrawer(); render(); toast('Session deleted'); return;
+  }
+  if(act === 'dupsess'){
+    const row = currentRow(); if(!row) return;
+    const block = state.schedule.cinemas[state.ci||0];
+    const day = block.days[state.dayIdx];
+    const copy = {...row, id:'r'+(ROWID++), start:row.start, end:row.end};
+    day.rows.push(copy); render(); toast('Duplicated — move it into a free slot'); return;
+  }
+
+  if(act === 'exportopen'){ openExport(); return; }
+  if(act === 'exportclose'){ $('#modal').classList.remove('on'); return; }
+  if(act === 'exptoggle'){
+    state.exp[v] = !state.exp[v];
+    el.classList.toggle('on', state.exp[v]);
+    state.expPrev = v;
+    previewExport(); return;
+  }
+  if(act === 'expprev'){ state.expPrev = v; previewExport(); return; }
+  if(act === 'exportrun'){ runExport(); return; }
+});
+
+document.addEventListener('input', ev=>{
+  const t = ev.target;
+  if(t.id === 'ctName'){ state.ct.name = t.value; ctUpdatePreview(); return; }
+  /* D3 - five dimension sliders replaced by the 0-5 star widget. */
+  if(t.dataset.cmp !== undefined){
+    const id = state.drawer.id;
+    const i = Number(t.dataset.cmp);
+    state.comps[id][i].sim = Number(t.value);
+    t.style.setProperty('--p', t.value + '%');
+    const row = t.closest('.cmprow');
+    row.querySelector('.p').textContent = t.value + '%';
+    state.schedule = null;
+    return;
+  }
+  if(t.dataset.rule !== undefined){
+    const id = state.drawer.id;
+    const i = Number(t.dataset.rule);
+    const r = state.rules[id][i];
+    r.v = (t.type === 'number') ? Number(t.value) : t.value;
+    const T = RULE_TYPES[r.t];
+    const txt = t.closest('.rule').querySelector('.txt');
+    if(txt) txt.innerHTML = T.say(r.v);
+    state.schedule = null;
+    return;
+  }
+  if(t.dataset.adj){
+    const id = state.drawer.id;
+    state.adj[id] = Number(t.value)/100;
+    t.style.setProperty('--p', (Number(t.value)-50)/100*100 + '%');
+    t.closest('.dim').querySelector('b').textContent = t.value + '%';
+    state.schedule = null;
+    return;
+  }
+});
+
+document.addEventListener('change', ev=>{
+  const t = ev.target;
+  if(t.id === 'ctFilm'){
+    state.ct.film = t.value;
+    const f = getFilm(t.value);
+    if(f){ state.ct.name = f.plain || f.title; const n = $('#ctName'); if(n) n.value = state.ct.name; }
+    ctUpdatePreview(); return;
+  }
+  if(t.classList.contains('ct-exp-box')){
+    state.ct.exps = $$('.ct-exp-box').filter(b=>b.checked).map(b=>b.value);
+    t.closest('.ct-exp').classList.toggle('on', t.checked);
+    ctSyncButton(); ctUpdatePreview(); return;
+  }
+  if(['ef','es','et','est'].includes(t.id)){ refreshSess(); return; }
+  if(ev.target.id === 'cinPick'){
+    state.ci = Number(ev.target.value); render(); return;
+  }
+  if(ev.target.id === 'expCin' || ev.target.id === 'expDay'){
+    if(ev.target.id === 'expDay'){
+      const v = ev.target.value;
+      state.expDay = v === 'all' ? 'all' : Number(v);
+    }
+    previewExport(); return;
+  }
+});
+
+document.addEventListener('click', ev=>{
+  if(!ev.target.closest('#avmenu') && !ev.target.closest('[data-act="avmenu"]')){
+    $('#avmenu').classList.remove('on');
+  }
+});
+
+/* D3 - drag a Table-view row onto another session to switch their time slots.
+   A short drag that misses the rows still nudges the start by 5-minute steps. */
+const PX_PER_MIN = 2;
+let d3drag = null;
+function d3Tip(text, x, y){
+  let t = document.getElementById('d3dragtip');
+  if(text === null){ if(t) t.remove(); return; }
+  if(!t){ t = document.createElement('div'); t.id='d3dragtip'; t.className='drag-tip'; document.body.appendChild(t); }
+  t.textContent = text; t.style.left=(x+14)+'px'; t.style.top=(y+18)+'px';
+}
+function d3Clear(){
+  Array.from(document.querySelectorAll('table.g tbody tr.drop-target')).forEach(t=>t.classList.remove('drop-target'));
+}
+function d3TargetAt(y, skipId){
+  let best = null;
+  Array.from(document.querySelectorAll('table.g tbody tr[data-id]')).forEach(tr=>{
+    if(tr.dataset.id === skipId) return;
+    const r = tr.getBoundingClientRect(); if(r.height <= 0) return;
+    const dist = y < r.top ? r.top-y : y > r.bottom ? y-r.bottom : 0;
+    if(!best || dist < best.dist) best = {tr, dist};
+  });
+  return best && best.dist === 0 ? best.tr : null;
+}
+document.addEventListener('pointerdown', e=>{
+  if(state.step !== 'schedule' || state.view !== 'table' || !state.schedule) return;
+  if(!state.user || state.user.role === 'Viewer') return;
+  if(e.target.closest('button')) return;
+  const tr = e.target.closest('table.g tbody tr[data-id]');
+  if(!tr) return;
+  const block = state.schedule.cinemas[state.ci || 0];
+  const day = block && block.days[state.dayIdx];
+  const row = day && day.rows.find(r=>r.id === tr.dataset.id);
+  if(!row) return;
+  e.preventDefault();
+  try{ tr.setPointerCapture(e.pointerId); }catch(_){}
+  d3drag = {tr, id:tr.dataset.id, startY:e.clientY, orig:row.start,
+    dur:row.end-row.start, pointerId:e.pointerId, moved:false, row, day, target:null};
+  tr.classList.add('drag-on');
+});
+document.addEventListener('pointermove', e=>{
+  if(!d3drag) return;
+  const d = d3drag, dy = e.clientY - d.startY;
+  if(Math.abs(dy) > 3) d.moved = true;
+  d.tr.style.transform = `translateY(${dy}px)`;
+  const c3 = d.tr.querySelector('td:nth-child(3)');
+  const c4 = d.tr.querySelector('td:nth-child(4)');
+  d3Clear(); d.target = null;
+  const tTr = (d.moved && Math.abs(dy) > 8) ? d3TargetAt(e.clientY, d.id) : null;
+  if(tTr){
+    const o = d.day.rows.find(r=>r.id === tTr.dataset.id);
+    if(o){
+      d.target = o;
+      tTr.classList.add('drop-target');
+      if(c3) c3.innerHTML = `<b>${hhmm(o.start)}</b>`;
+      if(c4) c4.textContent = hhmm(o.start + d.dur);
+      const of = getFilm(o.filmId);
+      d3Tip('↕ Switch with ' + (of?of.title:'session') + ' · ' + hhmm(o.start), e.clientX, e.clientY);
+      return;
+    }
+  }
+  const delta = Math.round(dy/PX_PER_MIN/5)*5;
+  d.proposed = Math.max(OPEN, Math.min(CLOSE - d.dur, d.orig + delta));
+  if(c3) c3.innerHTML = `<b>${hhmm(d.proposed)}</b>`;
+  if(c4) c4.textContent = hhmm(d.proposed + d.dur);
+  d3Tip('↕ Move to ' + hhmm(d.proposed), e.clientX, e.clientY);
+});
+function d3EndDrag(){
+  if(!d3drag) return;
+  const d = d3drag; d3drag = null;
+  try{ d.tr.releasePointerCapture(d.pointerId); }catch(_){}
+  d.tr.classList.remove('drag-on'); d.tr.style.transform = '';
+  d3Clear(); d3Tip(null);
+  if(!d.moved) return;
+  window.__d3SuppressUntil = performance.now() + 400;
+  if(d.target && d.target.id !== d.id){
+    const a=d.row, b=d.target, ad=a.end-a.start, bd=b.end-b.start, as=a.start;
+    a.start = clamp(b.start, OPEN, CLOSE-ad); a.end = a.start + ad;
+    b.start = clamp(as,     OPEN, CLOSE-bd); b.end = b.start + bd;
+    render(); const of = getFilm(b.filmId); toast('Switched with ' + (of?of.title:'session'));
+  } else if(d.proposed !== undefined && d.proposed !== d.orig){
+    d.row.start = d.proposed; d.row.end = d.proposed + d.dur;
+    render(); toast('Moved to ' + hhmm(d.proposed));
+  }
+}
+document.addEventListener('pointerup', d3EndDrag);
+document.addEventListener('pointercancel', ()=>{
+  if(!d3drag) return;
+  const d = d3drag; d3drag = null;
+  try{ d.tr.releasePointerCapture(d.pointerId); }catch(_){}
+  d.tr.classList.remove('drag-on'); d.tr.style.transform = '';
+  d3Clear(); d3Tip(null);
+});
+
+function toast(msg){
+  $('#toastmsg').textContent = msg;
+  $('#toast').classList.add('on');
+  clearTimeout(LASTF);
+  LASTF = setTimeout(()=>$('#toast').classList.remove('on'), 2400);
+}
+
+/* expose for testing */
+window.TGV = {state, forecastFor, generate, targetCinemas, composite, starHTML, seedStar, FILMS, CINEMAS, schedulePNG, forecastCSV, sessionsCSV, summaryCSV};
+
+boot();
+</script>
+</body>
+</html>

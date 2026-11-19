@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>TGV — Create Film · Title request</title>
+<style>
+:root{
+  --bg:#FAFAF9; --panel:#FFFFFF; --line:#E8E6E2; --line2:#F2F0EC;
+  --ink:#16150F; --ink2:#4B4740; --dim:#8B847A; --dim2:#AFA89E;
+  --red:#E4002B; --red-lt:#FEF2F4; --red-dk:#B00021;
+  --green:#12734A; --green-lt:#EDF7F1;
+  --amber:#96600A; --amber-lt:#FCF5E8;
+  --blue:#1F5FA8; --blue-lt:#EEF4FB;
+  --sans:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+.hidden{display:none !important}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#D9D5CE;border-radius:6px}
+
+.top{height:54px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 18px;position:sticky;top:0;z-index:30}
+.mk{background:var(--red);color:#fff;font-weight:800;font-size:11px;letter-spacing:.4px;padding:4px 7px;border-radius:5px}
+.brand{display:flex;flex-direction:column;line-height:1.2}
+.brand b{font-size:12.5px;font-weight:650}
+.brand span{font-size:9.5px;color:var(--dim2)}
+.sp{flex:1}
+.week{font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:7px;padding:5px 10px;background:#fff}
+.pill-lock{font-size:10px;font-weight:700;color:var(--amber);background:var(--amber-lt);border:1px solid #F0E2C4;border-radius:20px;padding:5px 10px;white-space:nowrap}
+.pill-lock.ok{color:#12734A;background:#E8F6EE;border-color:#C4E7D5}
+.av{width:27px;height:27px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:9.5px;font-weight:700}
+.who{font-size:10.5px;font-weight:650;color:var(--ink2);border:1px solid var(--line);border-radius:20px;padding:4px 9px;background:#fff}
+.guest{background:linear-gradient(155deg,#FDF6F7,#fff);border:1px solid #F0DCE0;border-radius:10px;padding:22px;height:100%;min-height:420px;display:flex;flex-direction:column;justify-content:center}
+.guest .eyebrow{font-size:9.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--red)}
+.guest h2{font-size:19px;font-weight:680;letter-spacing:-.3px;margin:8px 0 8px}
+.guest p{font-size:11.5px;color:var(--ink2);line-height:1.65;max-width:520px}
+.guest ul{margin:16px 0 0 18px;font-size:11px;color:var(--dim);line-height:1.85}
+.guest b{color:var(--ink)}
+.guest .sig{margin-top:18px;font-size:10px;color:var(--dim2)}
+.glogin{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.glogin input,.glogin select{height:31px;border:1px solid var(--line);border-radius:7px;padding:0 9px;font-size:11px;background:#fff}
+.glogin input{width:170px}
+.glogin select{width:140px}
+
+.flow{background:#fff;border-bottom:1px solid var(--line);padding:0 18px;display:flex;align-items:center;gap:0;overflow-x:auto}
+.flow .fs{display:flex;align-items:center;gap:9px;padding:11px 15px 11px 0;flex-shrink:0;color:var(--dim)}
+.flow .fs:not(:last-child)::after{content:'';width:22px;height:1px;background:var(--line);margin:0 4px 0 11px}
+.flow .fs .n{width:20px;height:20px;border-radius:50%;border:1.5px solid #DCD7CF;display:grid;place-items:center;font-size:9.5px;font-weight:700;flex-shrink:0;background:#fff}
+.flow .fs.on{color:var(--ink)}
+.flow .fs.on .n{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 2px 7px -2px rgba(228,0,43,.7)}
+.flow .fs.ready .n{background:var(--green-lt);border-color:transparent;color:var(--green)}
+.flow .fs b{font-size:11.5px;font-weight:650;display:block;line-height:1.25}
+.flow .fs span{font-size:9.5px;color:var(--dim2)}
+.flow .fs i{font-style:normal;font-size:9px;font-weight:700;color:var(--amber);background:var(--amber-lt);border-radius:10px;padding:2px 7px;margin-left:6px}
+.flow .fs i.ok{color:var(--green);background:var(--green-lt)}
+
+.wrap{padding:18px;max-width:1500px;margin:0 auto}
+.pghd{display:flex;align-items:flex-start;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.pghd h1{font-size:19px;font-weight:650;letter-spacing:-.3px;margin-bottom:3px}
+.pghd p{font-size:11.5px;color:var(--dim);line-height:1.55;max-width:760px}
+.pghd .r{margin-left:auto;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+
+.btn{height:31px;padding:0 13px;border-radius:7px;font-size:11.5px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:#fff;color:var(--ink2);white-space:nowrap}
+.btn:hover{border-color:#CFC9C0;background:#FCFBF9}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.dark:hover{background:#2C2A22}
+.btn.red{background:var(--red);border-color:var(--red);color:#fff}
+.btn.red:hover{background:var(--red-dk)}
+.btn.mini{height:25px;padding:0 9px;font-size:10.5px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.banner{background:var(--blue-lt);border:1px solid #D5E3F4;border-radius:8px;padding:10px 12px;font-size:11px;color:#1B4C82;line-height:1.55;margin-bottom:14px;display:flex;gap:9px;align-items:center}
+.banner b{font-weight:700}
+.banner .bk{margin-left:auto}
+
+.grid{display:grid;grid-template-columns:minmax(340px,420px) minmax(360px,1fr);gap:14px;align-items:start}
+@media(max-width:980px){.grid{grid-template-columns:1fr}}
+.panel{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px}
+.sec{font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim2);margin-bottom:11px;display:flex;align-items:center;gap:8px}
+.sec .note{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:500;color:var(--dim);font-size:10.5px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px 11px;margin-bottom:18px}
+.fld{display:block}
+.fld.wide{grid-column:1 / -1}
+.fld>span{display:block;font-size:10.5px;font-weight:600;color:var(--ink2);margin-bottom:5px}
+.fld input,.fld select{width:100%;height:34px;border:1px solid var(--line);border-radius:7px;background:#fff;padding:0 10px;font-size:11.5px}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgba(22,21,15,.06)}
+.fld input::placeholder{color:var(--dim2)}
+
+.tools{display:flex;gap:7px;margin-bottom:9px}
+.exps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.exp{position:relative;display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer;background:#fff;flex-wrap:wrap}
+.exp:hover{border-color:#CFC9C0}
+.exp.on{border-color:var(--red);background:var(--red-lt)}
+.exp input{position:absolute;opacity:0;width:0;height:0}
+.box{width:16px;height:16px;border:1.5px solid #DCD7CF;border-radius:4px;display:grid;place-items:center;font-size:10px;color:transparent;flex:0 0 auto;background:#fff}
+.exp.on .box{background:var(--red);border-color:var(--red);color:#fff}
+.lab{display:flex;flex-direction:column;line-height:1.25;flex:1}
+.lab b{font-size:11.5px;color:var(--ink)}
+.lab i{font-size:9.5px;font-style:normal;color:var(--dim);font-weight:700;letter-spacing:.3px}
+.exp .hint{font-size:9.5px;color:var(--dim2);width:100%;padding-left:25px}
+.create{width:100%;height:38px;justify-content:center;font-size:12px}
+
+.preview{background:#FAF8F5;border:1px dashed var(--line);border-radius:8px;padding:11px;min-height:104px}
+.pv{display:flex;align-items:center;gap:9px;padding:8px 9px;background:#fff;border:1px solid var(--line);border-radius:7px;margin-bottom:7px}
+.pv:last-child{margin-bottom:0}
+.tag{font-size:9.5px;font-weight:800;letter-spacing:.4px;color:var(--red-dk);background:var(--red-lt);border-radius:4px;padding:3px 6px;white-space:nowrap}
+.pv b{font-size:12px;color:var(--ink);flex:1;word-break:break-word}
+.pv em{font-style:normal;font-size:10px;color:var(--dim);white-space:nowrap}
+.empt{font-size:11px;color:var(--dim);line-height:1.6;padding:16px 4px;text-align:center}
+.note{font-size:10.5px;color:var(--dim);line-height:1.55;margin:9px 0 14px}
+.note b{color:var(--ink2)}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}
+.kpi{background:#FAFAF9;border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+.kpi .k{font-size:9.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--dim2)}
+.kpi .v{font-size:19px;font-weight:650;letter-spacing:-.5px;line-height:1.25}
+.kpi .f{font-size:9.5px;color:var(--dim)}
+@media(max-width:620px){.kpis{grid-template-columns:1fr 1fr}}
+
+.list{display:flex;flex-direction:column;gap:8px;max-height:330px;overflow:auto}
+.row{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+.sw{width:8px;height:34px;border-radius:3px;flex:0 0 auto}
+.rmain{flex:1;min-width:0;display:flex;flex-direction:column}
+.rmain b{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rmain span{font-size:10px;color:var(--dim)}
+.dots{display:flex;gap:3px;margin-top:3px}
+.dot{width:13px;height:13px;border-radius:50%;background:var(--line2);border:1px solid var(--line);display:grid;place-items:center;font-size:7px;color:#fff;font-weight:700}
+.status{font-size:9.5px;font-weight:700;color:var(--amber);background:var(--amber-lt);border-radius:5px;padding:4px 7px;white-space:nowrap}
+.status.sent{color:var(--green);background:var(--green-lt)}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:#fff;font-size:11.5px;font-weight:550;padding:9px 15px;border-radius:8px;opacity:0;z-index:400;transition:.26s cubic-bezier(.2,.8,.3,1);pointer-events:none}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+.foot{font-size:10px;color:var(--dim2);text-align:center;padding:16px 0 4px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <span class="mk">TGV</span>
+  <div class="brand"><b>Create Film</b><span>Title request · Programming Console</span></div>
+  <span class="sp"></span>
+  <span class="week">W45 · 2 Nov 2026</span>
+  <span class="pill-lock" id="lockPill">★ Ratings locked until titles exist</span>
+  <span class="who" id="who">Not signed in</span>
+  <span class="av" id="av">—</span>
+</header>
+
+<div class="flow">
+  <div class="fs on"><span class="n"></span><div><b>Create film &amp; titles</b><span>Pick the film, tick the experiences</span></div></div>
+  <div class="fs" id="flow2"><span class="n"></span><div><b>Programmers rate each title</b><span>Four attributed 0–5 scores per title</span></div><i id="flow2tag">Locked</i></div>
+  <div class="fs"><span class="n"></span><div><b>Forecast &amp; schedule</b><span>Only after every title is rated</span></div></div>
+</div>
+
+<div class="wrap">
+  <div class="pghd">
+    <div>
+      <h1>Create film · title request</h1>
+      <p>A film must exist as a Vista title before anyone can rate it. Name the film, tick the experiences it plays in, and one title is generated per experience — <b>[IMAX2D] DOOMSDAY</b>, <b>[BEANIE] DOOMSDAY</b> and so on.</p>
+    </div>
+    <div class="r">
+      <button class="btn" id="demo">Load example: Doomsday</button>
+      <button class="btn" id="clearAll">Clear created titles</button>
+    </div>
+  </div>
+
+  <div class="banner">
+    <span>◆</span>
+    <div><b>Business rule:</b> the rating queue opens only for titles created here. Each experience is a separate rateable title, so the IMAX and Beanie versions of the same film carry their own four programmer scores.</div>
+    <button class="btn mini bk" id="viewQueue">View rating queue →</button>
+  </div>
+
+  <div class="grid">
+    <section class="panel" id="formPanel">
+      <div class="sec">Film details</div>
+      <div class="fields">
+        <label class="fld wide"><span>Film name *</span><input id="fname" type="text" placeholder="e.g. Doomsday" value="Doomsday"/></label>
+        <label class="fld"><span>Distributor</span><input id="dist" type="text" value="Universal Pictures"/></label>
+        <label class="fld"><span>Genre</span><select id="genre"><option>Action · Thriller</option><option>Action · Adventure</option><option>Horror</option><option>Drama</option><option>Comedy</option><option>Romance</option><option>Animation · Family</option></select></label>
+        <label class="fld"><span>Language</span><select id="lang"><option>English</option><option>Malay</option><option>Tamil</option><option>Mandarin</option><option>Punjabi</option></select></label>
+        <label class="fld"><span>Runtime (min)</span><input id="mins" type="number" value="128" min="40" max="300"/></label>
+        <label class="fld"><span>Certification</span><select id="cert"><option>P13</option><option>13</option><option>16</option><option>18</option><option>U</option></select></label>
+        <label class="fld"><span>Release date</span><input id="release" type="date" value="2026-11-12"/></label>
+      </div>
+
+      <div class="sec">Choose experiences <span class="note">tick any combination</span></div>
+      <div class="tools">
+        <button class="btn mini" id="all">Select all</button>
+        <button class="btn mini" id="none">Clear</button>
+      </div>
+      <div class="exps" id="exps"></div>
+      <button class="btn red create" id="create">Create 2 Vista titles →</button>
+    </section>
+
+    <section class="panel guest hidden" id="guestPanel">
+      <div class="eyebrow">Shared slate · read only for you</div>
+      <h2 id="guestTitle">You can use the titles, not create them.</h2>
+      <p id="guestCopy">A film title request is raised once by the Creator. Programmers and viewers sign in and work from the same Vista titles — so everyone rates and schedules the same version of the film.</p>
+      <ul>
+        <li><b>Creator</b> publishes new titles for the slate.</li>
+        <li><b>Programmer</b> rates the created titles and builds the schedule.</li>
+        <li><b>Viewer</b> reads the ratings and the plan.</li>
+      </ul>
+      <div class="sig" id="guestSig">Waiting for sign in…</div>
+      <div class="glogin" id="glogin">
+        <input id="gemail" type="email" value="creator@tgv.com.my" placeholder="you@tgv.com.my"/>
+        <input id="gpass" type="password" value="demo1234" placeholder="password"/>
+        <select id="grole"><option value="Creator">Creator</option><option value="Programmer">Programmer</option><option value="Viewer">Viewer</option></select>
+        <button class="btn red mini" id="gsign">Sign in</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="sec">Preview · Vista title format</div>
+      <div class="preview" id="preview"></div>
+      <div class="note">Format: <b>[EXPERIENCE] FILM NAME</b>. Every line becomes a separate title in Vista and a separate row in the programming forecast.</div>
+
+      <div class="kpis" id="kpis"></div>
+
+      <div class="sec">Created titles <span class="note" id="cnt">0 this session</span></div>
+      <div class="list" id="list"></div>
+    </section>
+  </div>
+
+  <div class="foot">TGV Cinemas Sdn Bhd · Programming Console prototype · Create Film concept</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const EXPS = [
+  {id:'2d',      code:'2D',      name:'Standard 2D', hint:'Regular auditorium',    color:'#334155'},
+  {id:'imax2d',  code:'IMAX2D',  name:'IMAX',        hint:'IMAX 2D',              color:'#E4002B'},
+  {id:'deluxe',  code:'DELUXE',  name:'Deluxe',      hint:'Deluxe premium hall',  color:'#1F5FA8'},
+  {id:'beanie',  code:'BEANIE',  name:'Beanie',      hint:'Beanie seats',         color:'#7C4DBE'},
+  {id:'junior',  code:'JUNIOR',  name:'Junior',      hint:'Junior / kids hall',   color:'#96600A'},
+  {id:'indulge', code:'INDULGE', name:'Indulge',     hint:'Indulge dine-in',      color:'#12734A'}
+];
+const PEOPLE = ['A','W','S','M'];
+const PCOLOR = ['#E4002B','#1F5FA8','#7C4DBE','#12734A'];
+const KEY = 'tgv.createfilm.titles';
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const vista = (code,name) => '[' + code + '] ' + String(name).trim().toUpperCase();
+
+const state = { picked:['imax2d','beanie'], titles:[], user:null };
+try{ state.user = JSON.parse(localStorage.getItem('tgv.user') || 'null'); }catch(e){}
+
+function isCreator(){ return !!(state.user && state.user.role === 'Creator'); }
+
+function applyRole(){
+  const creator = isCreator();
+  $('#formPanel').classList.toggle('hidden', !creator);
+  $('#guestPanel').classList.toggle('hidden', creator);
+  $('#demo').classList.toggle('hidden', !creator);
+  $('#clearAll').classList.toggle('hidden', !creator);
+  $('#who').textContent = state.user ? state.user.name + ' · ' + state.user.role : 'Not signed in';
+  $('#av').textContent = state.user ? state.user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : '—';
+  $('#guestSig').textContent = state.user
+    ? 'Signed in as ' + state.user.name + ' · ' + state.user.role + (creator ? '' : ' · title creation is locked for this role')
+    : 'Waiting for sign in…';
+  $('#glogin').classList.toggle('hidden', !!state.user);
+}
+
+addEventListener('message', e=>{
+  if(e.data && e.data.type === 'tgv.user'){
+    state.user = e.data.user;
+    applyRole();
+  }
+});
+addEventListener('storage', e=>{
+  if(e.key === 'tgv.user'){
+    try{ state.user = JSON.parse(e.newValue || 'null'); }catch(err){ state.user = null; }
+    applyRole();
+  }
+  if(e.key === KEY){ load(); renderAll(); }
+});
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){ const v = JSON.parse(raw); if(Array.isArray(v)) state.titles = v; }
+  }catch(e){}
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(state.titles)); }catch(e){}
+  try{ parent.postMessage({type:'tgv.titles', titles:state.titles}, '*'); }catch(e){}
+}
+let toastTimer;
+function toast(msg){
+  const t = $('#toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('on'), 2600);
+}
+function details(){
+  return {
+    name: $('#fname').value.trim(),
+    dist: $('#dist').value.trim(),
+    genre: $('#genre').value,
+    lang: $('#lang').value,
+    mins: Number($('#mins').value) || 120,
+    cert: $('#cert').value,
+    release: $('#release').value
+  };
+}
+function renderExps(){
+  $('#exps').innerHTML = EXPS.map(e=>{
+    const on = state.picked.includes(e.id);
+    return `<label class="exp ${on?'on':''}" title="${esc(e.hint)}">
+      <input type="checkbox" class="exbox" value="${e.id}" ${on?'checked':''}/>
+      <span class="box">✓</span>
+      <span class="lab"><b>${esc(e.name)}</b><i>[${esc(e.code)}]</i></span>
+      <span class="hint">${esc(e.hint)}</span>
+    </label>`;
+  }).join('');
+}
+function renderPreview(){
+  const name = $('#fname').value.trim();
+  const picked = state.picked.map(id=>EXPS.find(e=>e.id===id)).filter(Boolean);
+  const el = $('#preview');
+  if(!name){ el.innerHTML = '<div class="empt">Type a film name to preview the Vista titles.</div>'; return; }
+  if(!picked.length){ el.innerHTML = '<div class="empt">Tick at least one experience to generate titles.</div>'; return; }
+  el.innerHTML = picked.map(e=>`<div class="pv"><span class="tag">${esc(e.code)}</span>
+    <b>${esc(vista(e.code,name))}</b><em>${esc(e.name)}</em></div>`).join('');
+}
+function renderKpis(){
+  const n = state.titles.length;
+  const drafts = state.titles.filter(t=>t.status==='draft').length;
+  const exps = new Set(state.titles.map(t=>t.code)).size;
+  $('#kpis').innerHTML = `
+    <div class="kpi"><div class="k">Titles created</div><div class="v">${n}</div><div class="f">Vista-ready titles</div></div>
+    <div class="kpi"><div class="k">Experiences</div><div class="v">${exps}</div><div class="f">distinct formats in use</div></div>
+    <div class="kpi"><div class="k">Awaiting rating</div><div class="v">${drafts}</div><div class="f">0 of 4 scores each</div></div>
+    <div class="kpi"><div class="k">Rating queue</div><div class="v">${n?'Open':'Locked'}</div><div class="f">${n?n+' title'+(n===1?'':'s')+' ready':'create a title first'}</div></div>`;
+  $('#cnt').textContent = n + ' this session';
+  const f2 = $('#flow2'), tag = $('#flow2tag'), pill = $('#lockPill');
+  if(n){
+    f2.classList.add('ready'); tag.textContent = n + ' ready'; tag.classList.add('ok');
+    pill.textContent = '★ Rating queue open · ' + n + ' title' + (n===1?'':'s');
+    pill.classList.add('ok');
+  } else {
+    f2.classList.remove('ready'); tag.textContent = 'Locked'; tag.classList.remove('ok');
+    pill.textContent = '★ Ratings locked until titles exist';
+    pill.classList.remove('ok');
+  }
+}
+function renderList(){
+  const el = $('#list');
+  const canEdit = isCreator();
+  if(!state.titles.length){
+    el.innerHTML = '<div class="empt">No titles created yet. Tick the experiences and press Create to generate Vista-style titles.</div>';
+    return;
+  }
+  el.innerHTML = state.titles.map(t=>{
+    const p = PEOPLE.map((x,i)=>`<span class="dot" style="background:${PCOLOR[i]}" title="Programmer ${i+1} · no score yet">${x}</span>`).join('');
+    const sent = t.status === 'sent';
+    return `<div class="row">
+      <span class="sw" style="background:${esc(t.color)}"></span>
+      <div class="rmain">
+        <b>${esc(t.title)}</b>
+        <span>${esc(t.expName)} · ${esc(t.genre)} · ${esc(t.lang)} · ${t.mins}m · ${esc(t.cert)} · created by ${esc(t.by || 'Creator')}</span>
+        <div class="dots">${p}</div>
+      </div>
+      <span class="status ${sent?'sent':''}">${sent?'Sent · 0/4':'Awaiting 0/4'}</span>
+      ${canEdit && !sent ? `<button class="btn mini" data-send="${esc(t.id)}">Send to rating</button>` : ''}
+      ${canEdit ? `<button class="btn mini" data-del="${esc(t.id)}">Remove</button>` : ''}
+    </div>`;
+  }).join('');
+}
+function renderAll(){ renderPreview(); renderKpis(); renderList(); syncButton(); }
+function syncButton(){
+  $('#create').textContent = 'Create ' + state.picked.length + ' Vista title' + (state.picked.length===1?'':'s') + ' →';
+}
+
+function create(){
+  if(!isCreator()){
+    toast('Only the Creator can publish a new film title'); return;
+  }
+  const d = details();
+  if(!d.name){ toast('Enter a film name first'); $('#fname').focus(); return; }
+  const picked = state.picked.map(id=>EXPS.find(e=>e.id===id)).filter(Boolean);
+  if(!picked.length){ toast('Tick at least one experience'); return; }
+  let made = 0, skipped = 0;
+  picked.forEach(e=>{
+    const title = vista(e.code, d.name);
+    if(state.titles.some(t=>t.title === title)){ skipped++; return; }
+    state.titles.push({
+      id:'t' + Date.now() + '-' + e.id + '-' + made,
+      title, code:e.code, expName:e.name, color:e.color,
+      name:d.name, dist:d.dist, genre:d.genre, lang:d.lang,
+      mins:d.mins, cert:d.cert, release:d.release,
+      status:'draft', at:'just now', by:state.user ? state.user.name : 'Creator'
+    });
+    made++;
+  });
+  save(); renderAll();
+  toast(made ? 'Created ' + made + ' Vista title' + (made===1?'':'s') + (skipped?' · '+skipped+' already existed':'') + ' · rating queue open'
+             : 'Those titles already exist');
+}
+function remove(id){
+  if(!isCreator()){ toast('Only the Creator can remove a title'); return; }
+  state.titles = state.titles.filter(t=>t.id!==id);
+  save(); renderAll(); toast('Title removed');
+}
+function send(id){
+  if(!isCreator()){ toast('Only the Creator can send a title to rating'); return; }
+  const t = state.titles.find(x=>x.id===id);
+  if(!t) return;
+  t.status = 'sent';
+  save(); renderAll(); toast('Sent to rating queue · ' + t.title);
+}
+
+document.addEventListener('input', e=>{
+  if(e.target.id === 'fname') renderPreview();
+});
+document.addEventListener('change', e=>{
+  if(e.target.classList.contains('exbox')){
+    state.picked = $$('.exbox').filter(b=>b.checked).map(b=>b.value);
+    e.target.closest('.exp').classList.toggle('on', e.target.checked);
+    renderPreview(); syncButton();
+  }
+});
+document.addEventListener('click', e=>{
+  const t = e.target;
+  if(t.closest('#all')){ state.picked = EXPS.map(x=>x.id); renderExps(); renderAll(); return; }
+  if(t.closest('#none')){ state.picked = []; renderExps(); renderAll(); return; }
+  if(t.closest('#create')){ create(); return; }
+  if(t.closest('#demo')){
+    $('#fname').value = 'Doomsday'; $('#dist').value = 'Universal Pictures';
+    $('#mins').value = 128; state.picked = ['imax2d','beanie'];
+    renderExps(); renderAll(); toast('Loaded the Doomsday example'); return;
+  }
+  if(t.closest('#clearAll')){
+    if(!isCreator()){ toast('Only the Creator can clear titles'); return; }
+    state.titles = []; save(); renderAll(); toast('Created titles cleared'); return;
+  }
+  if(t.closest('#gsign')){
+    const email = $('#gemail').value.trim();
+    const pass = $('#gpass').value;
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toast('Enter a valid staff email'); return; }
+    if(pass.length < 4){ toast('Password must be at least 4 characters'); return; }
+    const name = email.split('@')[0].replace(/[._-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+    state.user = {name, email, role:$('#grole').value, at:Date.now()};
+    try{ localStorage.setItem('tgv.user', JSON.stringify(state.user)); }catch(e){}
+    applyRole(); renderAll(); toast('Signed in as ' + name + ' · ' + state.user.role); return;
+  }
+  if(t.closest('#viewQueue')){
+    toast(state.titles.length ? state.titles.length + ' title' + (state.titles.length===1?'':'s') + ' in the rating queue · 0/4 scores each'
+                              : 'Rating queue is locked — create a title first'); return;
+  }
+  const del = t.closest('[data-del]'); if(del){ remove(del.dataset.del); return; }
+  const snd = t.closest('[data-send]'); if(snd){ send(snd.dataset.send); return; }
+});
+
+load(); applyRole(); renderExps(); renderAll();
+</script>
+</body>
+</html>

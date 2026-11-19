@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TGV Programmer — Simple</title>
+<style>
+:root{
+  --bg:#FAFAF9;
+  --panel:#FFFFFF;
+  --line:#E8E6E2;
+  --line2:#F2F0EC;
+  --ink:#16150F;
+  --ink2:#4B4740;
+  --dim:#8B847A;
+  --dim2:#AFA89E;
+  --red:#E4002B;
+  --red-lt:#FEF2F4;
+  --green:#12734A;
+  --green-lt:#EDF7F1;
+  --amber:#96600A;
+  --amber-lt:#FCF5E8;
+  --blue:#1F5FA8;
+  --blue-lt:#EEF4FB;
+  --sans:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+  --mono:'Cascadia Mono','Consolas',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select{font-family:inherit;font-size:inherit;color:inherit}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#D9D5CE;border-radius:5px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:0;z-index:50;height:56px;background:#fff;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:14px;padding:0 20px}
+.brand{display:flex;align-items:center;gap:9px}
+.brand .mk{width:26px;height:26px;border-radius:6px;background:var(--red);color:#fff;display:grid;place-items:center;
+  font-size:9.5px;font-weight:800;letter-spacing:.3px}
+.brand b{font-size:13px;font-weight:650;letter-spacing:-.2px}
+.brand span{font-size:10px;color:var(--dim);font-weight:500}
+.top .sp{flex:1}
+.sel{height:32px;border:1px solid var(--line);border-radius:7px;background:#fff;padding:0 9px;font-size:12px;
+  color:var(--ink2);outline:none;transition:.12s}
+.sel:hover{border-color:#D6D2CB}
+.sel:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(22,21,15,.06)}
+.btn{height:32px;padding:0 14px;border-radius:7px;font-size:12px;font-weight:600;display:inline-flex;
+  align-items:center;gap:6px;transition:.14s;white-space:nowrap}
+.btn.red{background:var(--red);color:#fff;box-shadow:0 1px 2px rgba(228,0,43,.28)}
+.btn.red:hover{background:#C40025}
+.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink2)}
+.btn.ghost:hover{background:var(--line2);color:var(--ink)}
+.btn.sm{height:27px;padding:0 10px;font-size:11px;border-radius:6px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:322px 1fr;min-height:calc(100vh - 56px)}
+@media(max-width:1080px){.shell{grid-template-columns:1fr}}
+
+/* ---------- rail ---------- */
+.rail{background:#fff;border-right:1px solid var(--line);padding:18px;position:sticky;top:56px;
+  height:calc(100vh - 56px);overflow-y:auto}
+@media(max-width:1080px){.rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}}
+
+.filmhead{display:flex;gap:12px;align-items:flex-start;margin-bottom:18px}
+.poster{width:56px;height:80px;border-radius:6px;flex-shrink:0;position:relative;overflow:hidden;
+  display:flex;align-items:flex-end;padding:6px}
+.poster span{position:relative;z-index:2;color:#fff;font-size:9px;font-weight:800;line-height:1.05;letter-spacing:.2px}
+.poster::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5),transparent 60%)}
+.filmhead .t{min-width:0;flex:1}
+.filmhead .t h2{font-size:15px;font-weight:700;letter-spacing:-.25px;line-height:1.2}
+.filmhead .t .m{font-size:10.5px;color:var(--dim);margin-top:3px;line-height:1.4}
+.filmhead .t button{font-size:10.5px;color:var(--red);font-weight:600;margin-top:5px}
+.filmhead .t button:hover{text-decoration:underline}
+
+.lbl{font-size:9.5px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--dim2);
+  margin-bottom:9px;display:flex;align-items:center;justify-content:space-between}
+
+/* score */
+.scorebox{background:var(--bg);border-radius:9px;padding:12px 13px;margin-bottom:18px}
+.idxrow{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
+.idxrow .n{font-size:27px;font-weight:750;letter-spacing:-1.2px;line-height:1;font-variant-numeric:tabular-nums}
+.pill{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.2px}
+.pill.strong{background:var(--green-lt);color:var(--green)}
+.pill.solid{background:var(--blue-lt);color:var(--blue)}
+.pill.watch{background:var(--amber-lt);color:var(--amber)}
+.pill.weak{background:var(--red-lt);color:var(--red)}
+.idxbar{height:4px;border-radius:3px;background:#E6E2DB;overflow:hidden;margin:9px 0 4px}
+.idxbar i{display:block;height:100%;border-radius:3px;background:var(--red);transition:width .18s}
+.idxnote{font-size:10px;color:var(--dim)}
+/* 1B — star score */
+.scorebox.stars{padding:14px}
+.starrow{display:flex;align-items:baseline;gap:6px;margin-bottom:8px}
+.starrow .sf{font-size:27px;font-weight:750;letter-spacing:-1.2px;line-height:1;font-variant-numeric:tabular-nums}
+.starrow .so{font-size:13px;color:var(--dim);font-weight:600}
+.starrow .pill{margin-left:4px}
+.stars{display:inline-flex;gap:3px}
+.star{position:relative;width:30px;height:30px;font-size:30px;line-height:30px;text-align:center;color:#D9D2C7}
+.star .glyph{color:#D9D2C7;transition:color .12s}
+.star.on .glyph{color:var(--red)}
+.star.half .glyph{background:linear-gradient(90deg,var(--red) 50%,#D9D2C7 50%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.star .hit{position:absolute;top:0;height:100%;width:50%;cursor:pointer;z-index:2}
+.star .hit.l{left:0}
+.star .hit.r{right:0}
+/* 1B — schedule row drag (time, same screen, 5-min snap) */
+table.s tbody tr[data-id]{cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none}
+table.s tbody tr[data-id].drag-on{background:#FBEAED;box-shadow:0 8px 22px -8px rgba(0,0,0,.4);position:relative;z-index:6}
+table.s tbody tr[data-id] td:nth-child(3) b{color:var(--red)}
+/* switch with the session above/below */
+.swp{display:inline-flex;gap:1px;margin-left:7px;vertical-align:middle;opacity:.4;transition:opacity .12s}
+tr:hover .swp{opacity:1}
+.swp button{width:17px;height:17px;line-height:14px;font-size:9px;border:1px solid var(--line);
+  border-radius:3px;background:#fff;color:var(--dim);cursor:pointer;padding:0;text-align:center}
+.swp button:hover{background:var(--red);border-color:var(--red);color:#fff}
+table.s tbody tr[data-id].drag-on{opacity:.82}
+table.s tbody tr[data-id].drop-target{outline:2px solid #7C4DBE;outline-offset:-2px;
+  background:#F3EDFB !important;position:relative;z-index:8}
+.drag-tip{position:fixed;z-index:200;background:#201C17;color:#fff;font-size:11px;font-weight:600;
+  padding:6px 10px;border-radius:6px;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.28);white-space:nowrap}
+
+.dim{margin-top:11px}
+.dim:first-of-type{margin-top:14px}
+.dim .r{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.dim .r span{font-size:11.5px;font-weight:550;color:var(--ink2)}
+.dim .r b{font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:16px;background:transparent;cursor:pointer;display:block}
+input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;
+  background:linear-gradient(to right,var(--red) 0%,var(--red) var(--p,50%),#E6E2DB var(--p,50%),#E6E2DB 100%)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;
+  background:#fff;border:2.5px solid var(--red);margin-top:-4.5px;box-shadow:0 1px 2px rgba(0,0,0,.18)}
+input[type=range]::-moz-range-track{height:3px;border-radius:2px;background:#E6E2DB}
+input[type=range]::-moz-range-thumb{width:10px;height:10px;border-radius:50%;background:#fff;border:2.5px solid var(--red)}
+
+/* comparables */
+.cmp{display:flex;flex-direction:column;gap:7px;margin-bottom:8px}
+.cmprow{background:var(--bg);border-radius:8px;padding:8px 10px}
+.cmprow .h{display:flex;align-items:center;gap:6px}
+.cmprow .h .nm{font-size:11.5px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmprow .h .x{font-size:13px;color:var(--dim2);line-height:1;padding:0 2px}
+.cmprow .h .x:hover{color:var(--red)}
+.cmprow .f{display:flex;align-items:center;gap:8px;margin-top:4px}
+.cmprow .f input[type=range]{flex:1;height:14px}
+.cmprow .f input[type=range]::-webkit-slider-thumb{width:10px;height:10px;margin-top:-3.5px}
+.cmprow .f .p{font-size:10px;color:var(--dim);font-variant-numeric:tabular-nums;min-width:26px;text-align:right}
+.cmprow .f .a{font-size:10px;color:var(--dim2);font-variant-numeric:tabular-nums;min-width:38px;text-align:right}
+
+/* rail summary */
+.summary{border-top:1px solid var(--line2);margin-top:16px;padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.summary div span{display:block;font-size:9.5px;color:var(--dim2);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.summary div b{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+
+/* ---------- main ---------- */
+.main{padding:20px 24px 80px;min-width:0}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.tab{padding:9px 14px;font-size:12.5px;font-weight:600;color:var(--dim);border-bottom:2px solid transparent;
+  margin-bottom:-1px;transition:.13s;display:flex;align-items:center;gap:7px}
+.tab:hover{color:var(--ink2)}
+.tab.on{color:var(--ink);border-bottom-color:var(--red)}
+.tab .cnt{font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:9px;background:var(--line2);color:var(--dim)}
+.tab.on .cnt{background:var(--red-lt);color:var(--red)}
+
+.pagehd{margin-bottom:18px}
+.pagehd h1{font-size:19px;font-weight:700;letter-spacing:-.4px}
+.pagehd p{font-size:12px;color:var(--dim);margin-top:4px;max-width:620px;line-height:1.55}
+
+/* rules */
+.presets{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+.preset{padding:7px 12px;border-radius:7px;border:1px solid var(--line);background:#fff;font-size:11.5px;
+  font-weight:600;color:var(--ink2);transition:.13s}
+.preset:hover{border-color:#CFCAC2;background:var(--line2)}
+.preset.on{border-color:var(--ink);background:var(--ink);color:#fff}
+
+.rules{display:flex;flex-direction:column;gap:8px}
+.rule{background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 14px;display:flex;
+  align-items:center;gap:12px;transition:.13s}
+.rule:hover{border-color:#D8D3CB}
+.rule.off{opacity:.45}
+.rule .dot{width:3px;align-self:stretch;border-radius:3px;background:var(--red);flex-shrink:0}
+.rule.soft .dot{background:var(--blue)}
+.rule .body{flex:1;min-width:0}
+.rule .body .txt{font-size:12.5px;font-weight:600;letter-spacing:-.1px}
+.rule .body .sub{font-size:10.5px;color:var(--dim);margin-top:2px}
+.rule .ctl{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.rule input[type=number],.rule input[type=time],.rule input[type=date]{
+  width:62px;height:28px;border:1px solid var(--line);border-radius:6px;text-align:center;
+  font-size:12px;font-variant-numeric:tabular-nums;outline:none;background:#fff}
+.rule input[type=time]{width:78px}
+.rule input[type=date]{width:118px}
+.rule input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(22,21,15,.06)}
+.sw{width:32px;height:18px;border-radius:10px;background:#DAD5CD;position:relative;transition:.16s;flex-shrink:0}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;
+  box-shadow:0 1px 2px rgba(0,0,0,.22);transition:.16s}
+.sw.on{background:var(--green)}
+.sw.on::after{left:16px}
+.rm{width:24px;height:24px;border-radius:5px;display:grid;place-items:center;color:var(--dim2);font-size:14px}
+.rm:hover{background:var(--red-lt);color:var(--red)}
+
+.addrow{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;padding-top:14px;border-top:1px dashed var(--line)}
+.addrow .lbl2{font-size:10.5px;color:var(--dim);align-self:center;margin-right:2px}
+.addrule{padding:6px 10px;border-radius:6px;border:1px dashed #D6D1C9;font-size:11px;color:var(--ink2);
+  font-weight:550;background:#fff;transition:.13s}
+.addrule:hover{border-color:var(--ink);border-style:solid}
+
+/* forecast */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+@media(max-width:760px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 14px}
+.kpi .k{font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim2)}
+.kpi .v{font-size:24px;font-weight:750;letter-spacing:-1px;margin-top:3px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:11px;font-weight:600;color:var(--dim);letter-spacing:0;margin-left:2px}
+.kpi .f{font-size:10px;color:var(--dim);margin-top:2px}
+
+.bars{display:flex;gap:0;padding:0 2px}
+.bcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:0 5px}
+.bcol .plot{width:100%;height:118px;display:flex;align-items:flex-end;border-bottom:1px solid var(--line)}
+.bcol .b{width:100%;border-radius:3px 3px 0 0;background:#DED9D1;transition:height .25s,background .15s}
+.bcol.peak .b{background:var(--red)}
+.bcol .n{font-size:9.5px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums;margin-bottom:5px}
+.bcol .d{font-size:10px;color:var(--dim);margin-top:7px;text-align:center;line-height:1.35}
+.bcol .d em{display:block;font-style:normal;color:var(--dim2);font-size:9.5px}
+.bcol.peak .n{color:var(--red)}
+
+.bind{background:var(--amber-lt);border:1px solid #F0E2C4;border-radius:8px;padding:11px 13px;
+  font-size:11.5px;color:#6B4A08;line-height:1.55;margin-top:14px;display:flex;gap:9px}
+.bind b{font-weight:700;color:#4A3305}
+.bind .i{font-size:13px;line-height:1.2}
+
+.derive{background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-top:14px}
+.derive .row{display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;color:var(--ink2)}
+.derive .row b{font-variant-numeric:tabular-nums;font-weight:600}
+.derive .row.t{border-top:1px solid var(--line2);margin-top:5px;padding-top:8px;color:var(--ink);font-weight:700}
+
+/* schedule */
+.schedbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.days{display:flex;gap:4px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:3px}
+.day{padding:6px 11px;border-radius:6px;font-size:11px;font-weight:600;color:var(--dim);transition:.13s;text-align:center}
+.day b{display:block;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.day:hover{background:var(--line2)}
+.day.on{background:var(--ink);color:#fff}
+.day.on b{color:#fff}
+
+.tblwrap{background:#fff;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.tblscroll{overflow-x:auto}
+table.s{width:100%;border-collapse:collapse;font-size:11.5px;min-width:820px}
+table.s thead th{background:#F7F6F4;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--dim);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.s thead th.n{text-align:right}
+table.s tbody td{padding:5px 10px;border-bottom:1px solid var(--line2);white-space:nowrap;font-variant-numeric:tabular-nums}
+table.s tbody tr{cursor:pointer;transition:background .1s}
+table.s tbody tr:hover{background:#FAFAF8}
+table.s tbody tr.mine{background:var(--red-lt)}
+table.s tbody tr.mine:hover{background:#FDE6EA}
+table.s tbody tr.mine td:first-child{box-shadow:inset 3px 0 0 var(--red)}
+table.s td.n{text-align:right}
+table.s td.scr{font-weight:600;color:var(--ink)}
+table.s td.film{max-width:230px;overflow:hidden;text-overflow:ellipsis}
+.tag{display:inline-block;font-size:9.5px;font-weight:700;padding:1.5px 6px;border-radius:4px;letter-spacing:.2px}
+.tag.planned{background:var(--blue-lt);color:var(--blue)}
+.tag.open{background:var(--green-lt);color:var(--green)}
+.tag.closed{background:#F0EEEB;color:var(--dim)}
+.tag.off{background:#F0EEEB;color:var(--dim)}
+table.s tr.sub td{background:#FBFAF8;font-weight:600;font-size:10.5px;color:var(--dim);border-bottom:1px solid var(--line)}
+table.s tr.grand td{background:#F5F4F1;font-weight:750;font-size:12px;color:var(--ink);border-bottom:0}
+.oc{font-weight:650}
+.oc.hi{color:var(--red)}
+.oc.md{color:var(--green)}
+.oc.lo{color:var(--dim)}
+
+.foot{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);
+  font-size:10.5px;color:var(--dim);background:#FBFAF8;flex-wrap:wrap;gap:10px}
+.foot .l{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.sw2{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:-1px}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(22,21,15,.22);opacity:0;pointer-events:none;transition:.18s;z-index:80}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:352px;background:#fff;z-index:90;
+  transform:translateX(100%);transition:transform .22s cubic-bezier(.2,.8,.3,1);
+  display:flex;flex-direction:column;box-shadow:-10px 0 40px -16px rgba(0,0,0,.28)}
+.drawer.on{transform:translateX(0)}
+.drawer .hd{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.drawer .hd h3{font-size:14px;font-weight:700;letter-spacing:-.2px;flex:1}
+.drawer .hd .x{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;color:var(--dim);font-size:16px}
+.drawer .hd .x:hover{background:var(--line2);color:var(--ink)}
+.drawer .bd{padding:16px 18px;overflow-y:auto;flex:1}
+.fld{margin-bottom:14px}
+.fld label{display:block;font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;
+  color:var(--dim2);margin-bottom:5px}
+.fld select,.fld input[type=time]{width:100%;height:34px;border:1px solid var(--line);border-radius:7px;
+  padding:0 10px;font-size:12.5px;background:#fff;outline:none}
+.fld select:focus,.fld input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(22,21,15,.06)}
+.timewrap{display:flex;gap:5px}
+.timewrap input{flex:1}
+.timewrap button{width:34px;height:34px;border:1px solid var(--line);border-radius:7px;font-size:14px;
+  color:var(--ink2);display:grid;place-items:center;background:#fff}
+.timewrap button:hover{background:var(--line2)}
+.note{font-size:11px;color:var(--dim);line-height:1.5;background:var(--bg);border-radius:7px;padding:9px 11px}
+.note b{color:var(--ink2);font-weight:600}
+.warnbox{font-size:11px;line-height:1.5;background:var(--red-lt);border:1px solid #F7D3D9;color:#8C1020;
+  border-radius:7px;padding:9px 11px;margin-top:10px}
+.softbox{font-size:11px;line-height:1.5;background:#FFF8E6;border:1px solid #F2E2B8;color:#7A5B12;
+  border-radius:7px;padding:9px 11px;margin-top:10px}
+.softbox b{color:#5E450B}
+.drawer .ft{padding:14px 18px;border-top:1px solid var(--line);display:flex;gap:7px}
+.drawer .ft .btn{flex:1;justify-content:center}
+.btn.del{background:var(--red-lt);color:var(--red)}
+.btn.del:hover{background:#FBDDE3}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:24px}
+.modal.on{display:flex}
+.modal .box{background:#fff;border-radius:12px;width:100%;max-width:680px;max-height:82vh;display:flex;
+  flex-direction:column;overflow:hidden;box-shadow:0 24px 70px -20px rgba(0,0,0,.4)}
+.modal .hd{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center}
+.modal .hd h3{font-size:14px;font-weight:700;flex:1}
+.modal .hd .x{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;color:var(--dim);font-size:16px}
+.modal .hd .x:hover{background:var(--line2)}
+.modal .bd{padding:16px 18px;overflow-y:auto}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:600px){.fgrid{grid-template-columns:1fr}}
+.fopt{display:flex;gap:10px;align-items:center;padding:9px 10px;border:1px solid var(--line);border-radius:8px;
+  text-align:left;transition:.13s;background:#fff}
+.fopt:hover{border-color:#CFCAC2;background:var(--line2)}
+.fopt.on{border-color:var(--red);background:var(--red-lt)}
+.fopt .p{width:32px;height:44px;border-radius:4px;flex-shrink:0}
+.fopt .t{min-width:0}
+.fopt .t b{display:block;font-size:11.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fopt .t span{font-size:10px;color:var(--dim)}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);
+  color:#fff;font-size:11.5px;font-weight:550;padding:9px 16px;border-radius:8px;opacity:0;z-index:200;
+  transition:.26s cubic-bezier(.2,.8,.3,1);display:flex;align-items:center;gap:7px}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+.empty{padding:40px 20px;text-align:center;color:var(--dim);font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">
+    <div class="mk">TGV</div>
+    <b>Programmer</b>
+  </div>
+  <div class="sp"></div>
+  <select class="sel" id="cin"></select>
+  <select class="sel" id="wk"></select>
+  <button class="btn red" id="gen" data-act="gen">Generate schedule</button>
+</div>
+
+<div class="shell">
+  <aside class="rail" id="rail"></aside>
+  <main class="main" id="main"></main>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="drawer"></div>
+<div class="modal" id="modal"><div class="box" id="modalbox"></div></div>
+<div class="toast" id="toast"><span>✓</span><span id="toastmsg"></span></div>
+
+<script>
+/* ============================================================
+   DATA
+   ============================================================ */
+const SCREENS = {
+  'Suria KLCC':[['Beanie 1',24],['Beanie 2',22],['Cinema 1',154],['Cinema 2',168],['Cinema 3',180],['Cinema 4',180],['Cinema 5',109],['Cinema 6',141],['IMAX',143],['Indulge 1',40],['Indulge 2',40],['Indulge BEREX',17]],
+  '1 Utama':[['Beanie',40],['BEREX',12],['Cinema 1',117],['Cinema 2',134],['Cinema 3',178],['Cinema 4',280],['Cinema 5',290],['Cinema 6',153],['Cinema 7',153],['IMAX',277],['INDULGE 2',31],['Junior',66]],
+  'Sunway Pyramid':[['Beanie',48],['Cinema 1',110],['Cinema 10',72],['Cinema 2',86],['Cinema 3',237],['Cinema 4',186],['Cinema 5',268],['Cinema 6',95],['Cinema 7',126],['IMAX',273],['Indulge 1',40],['Indulge BEREX',20],['Junior',72]],
+  'Pavilion KL':[['Cinema 1',196],['Cinema 2',267],['Cinema 3',254],['Cinema 4',195],['Cinema 5',86],['Cinema 6',85],['Cinema 7',116],['Cinema 8',107],['INDULGE 1',39],['INDULGE 2',36]],
+  'Setia Walk':[['Beanie',60],['Cinema 1',205],['Cinema 2',112],['Cinema 3',124],['Cinema 4',214],['Cinema 5',276],['Cinema 6',238],['Cinema 7',235],['Cinema 8',225]],
+  'Velocity':[['Cinema 1',260],['Cinema 2',214],['Cinema 3',174],['Cinema 4',214],['Cinema 5',203],['IMAX',338],['INDULGE 1',36],['INDULGE 2',36],['Junior',174]],
+  'Mines':[['Cinema 1',102],['Cinema 2',141],['Cinema 3',225],['Cinema 4',223],['Cinema 5',284]],
+  'Tebrau':[['Beanie',36],['Cinema 1',263],['Cinema 2',124],['Cinema 3',124],['Cinema 4',189],['Cinema 5',144],['Cinema 6',146],['Cinema 7',114],['Imax',332],['Junior',76]],
+  'Gurney Paragon Mall':[['Beanie',30],['Cinema 1',274],['Cinema 2',202],['Cinema 3',122],['Cinema 4',96],['Cinema 5',92],['Cinema 6',78],['Cinema 7',104],['IMAX',292]]
+};
+const CINEMAS = Object.keys(SCREENS).map(name=>{
+  const screens = SCREENS[name].map(([n,cap])=>{
+    const l = n.toLowerCase();
+    const type = l.includes('imax')?'IMAX':l.includes('berex')?'BEREX':l.includes('indulge')?'Indulge'
+      :l.includes('beanie')?'Beanie':l.includes('junior')?'Junior':'Standard';
+    return {name:n, cap, type};
+  });
+  const total = screens.reduce((a,s)=>a+s.cap,0);
+  return {name, screens, total, atp: 19.5, factor: 0.55+0.55*(total/1200)};
+});
+
+const FILMS = [
+{id:'kudrat',title:'KUDRAT 1968',sub:'High Council',genre:'Action · Crime',lang:'Malay',mins:113,rating:'16',
+ dist:'Astro Shaw',release:'2026-10-29',c1:'#2A1A10',c2:'#8A5624',imax:0,
+ about:'Abbas enrols at KUDRAT, an institution carrying his estranged father\u2019s name, where a buried history forces him to confront a legacy he never asked for. A prequel to Projek: High Council.',
+ comps:[{n:'Kahar: Kapla High Council',sim:88,aps:74,idx:74},{n:'Projek: High Council',sim:81,aps:58,idx:66},{n:'Mat Kilau',sim:44,aps:47,idx:71}],
+ scores:4,
+ rules:[{t:'minWeek',v:28},{t:'minDay',v:4},{t:'prime',v:2}]},
+{id:'clayface',title:'CLAYFACE',sub:'DC Studios',genre:'Horror · Superhero',lang:'English',mins:108,rating:'18',
+ dist:'Warner Bros.',release:'2026-10-23',c1:'#14161C',c2:'#5A3A2E',imax:1,
+ about:'A body-horror reimagining of the Batman rogue — an actor\u2019s disintegrating form and the monster he becomes holding it together. DC\u2019s first outright horror entry in this market.',
+ comps:[{n:'The Conjuring 3',sim:86,aps:36,idx:58},{n:'Joker',sim:72,aps:52,idx:76},{n:'Scream VI',sim:64,aps:29,idx:49}],
+ scores:3.5,
+ rules:[{t:'minDay',v:2},{t:'maxDay',v:5},{t:'noEarly',v:'12:00'}]},
+{id:'sf',title:'STREET FIGHTER',sub:'',genre:'Action · Adventure',lang:'English',mins:128,rating:'P13',
+ dist:'Sony Pictures',release:'2026-10-30',c1:'#0B1420',c2:'#1E6E8C',imax:1,
+ about:'The World Warrior tournament arrives on the big screen — a globe-spanning fight card pulling the franchise\u2019s full roster into one bracket. Built for the biggest room in the building.',
+ comps:[{n:'Mortal Kombat',sim:84,aps:54,idx:58},{n:'Dune: Part Two',sim:52,aps:66,idx:82},{n:'Uncharted',sim:71,aps:41,idx:55}],
+ scores:3.5,
+ rules:[{t:'minWeek',v:24},{t:'minDay',v:3},{t:'imax',v:null}]},
+{id:'jailer',title:'JAILER 2',sub:'',genre:'Action · Comedy',lang:'Tamil',mins:165,rating:'P13',
+ dist:'Sun Pictures',release:'2026-10-30',c1:'#1A1006',c2:'#8C6A18',imax:1,
+ about:'The retired jailer is pulled back into the business of men who should have stayed locked up. Long runtime, big star, and an audience that books late.',
+ comps:[{n:'Jailer (2023)',sim:94,aps:62,idx:72},{n:'Vikram',sim:78,aps:48,idx:68},{n:'Leo',sim:74,aps:44,idx:60}],
+ scores:4,
+ rules:[{t:'minDay',v:2},{t:'maxDay',v:4},{t:'imax',v:null}]},
+{id:'whale',title:'WHALEFALL',sub:'',genre:'Thriller · Survival',lang:'English',mins:100,rating:'P13',
+ dist:'20th Century',release:'2026-10-22',c1:'#061018',c2:'#12414F',imax:0,
+ about:'A diver is swallowed by a sperm whale with one hour of air left and one way out. A single-location survival thriller.',
+ comps:[{n:'The Shallows',sim:82,aps:24,idx:52},{n:'47 Meters Down',sim:76,aps:18,idx:44},{n:'Fall',sim:69,aps:21,idx:48}],
+ scores:3,
+ rules:[{t:'minWeek',v:7},{t:'maxDay',v:3}]},
+{id:'petaka',title:'PETAKA GUNUNG',sub:'',genre:'Horror · Adventure',lang:'Malay',mins:100,rating:'P13',
+ dist:'Skop Productions',release:'2026-10-15',c1:'#0E1410',c2:'#2F5233',imax:0,
+ about:'A mountain expedition goes wrong when the group disturbs something that was meant to stay buried. Local horror with a weekend-only demand pattern.',
+ comps:[{n:'Munafik 2',sim:74,aps:44,idx:68},{n:'Roh',sim:81,aps:26,idx:46},{n:'Sangkar',sim:66,aps:22,idx:44}],
+ scores:3,
+ rules:[{t:'minWeek',v:7},{t:'maxDay',v:3}]},
+{id:'always',title:'ALWAYS YOURS',sub:'',genre:'Romance · Drama',lang:'Malay',mins:110,rating:'P13',
+ dist:'Primeworks',release:'2026-10-08',c1:'#1B0F16',c2:'#8A3A5C',imax:0,
+ about:'A love story across two timelines, hinging on a letter that arrives thirty years too late. Week 4 — coasting on matinee and couples trade.',
+ comps:[{n:'Ada Apa Dengan Cinta?',sim:72,aps:30,idx:62},{n:'Pulang',sim:68,aps:24,idx:52},{n:'Hujan',sim:61,aps:19,idx:46}],
+ scores:2.5,
+ rules:[{t:'minWeek',v:5},{t:'maxDay',v:2}]},
+{id:'udta',title:'UDTA TEER',sub:'',genre:'Action · Drama',lang:'Punjabi',mins:140,rating:'18',
+ dist:'White Hill',release:'2026-09-25',c1:'#150C0C',c2:'#6E2020',imax:0,
+ about:'A Punjab-set crime drama about the cost of a single pulled trigger, told across three families. Long, dark, firmly adult.',
+ comps:[{n:'Animal',sim:66,aps:28,idx:58},{n:'Udta Punjab',sim:79,aps:16,idx:52},{n:'Arjan',sim:58,aps:14,idx:40}],
+ scores:2.5,
+ rules:[{t:'minWeek',v:4},{t:'maxDay',v:2}]},
+{id:'kabaddi',title:'KABADDI 5',sub:'',genre:'Sports · Comedy',lang:'Punjabi',mins:150,rating:'P13',
+ dist:'Rhythm Boyz',release:'2026-09-18',c1:'#10140A',c2:'#5E7020',imax:0,
+ about:'The fifth entry in the kabaddi comedy series — village rivals, a championship, the same ensemble back together. Week 7 and still holding a late crowd.',
+ comps:[{n:'Kabaddi Kabaddi',sim:88,aps:22,idx:50},{n:'Carry On Jatta 3',sim:62,aps:26,idx:54},{n:'Jatt & Juliet 3',sim:57,aps:18,idx:46}],
+ scores:2.5,
+ rules:[{t:'minWeek',v:4},{t:'maxDay',v:2}]},
+{id:'godskin',title:'GOD SKIN',sub:'',genre:'Horror',lang:'Malay',mins:125,rating:'18',
+ dist:'Skop Productions',release:'2026-10-01',c1:'#120C14',c2:'#4A2A56',imax:0,
+ about:'A ritual-horror piece about a family that inherits more than a house. Week 5, running on atmosphere rather than star power.',
+ comps:[{n:'Munafik',sim:71,aps:32,idx:58},{n:'Interchange',sim:64,aps:16,idx:44},{n:'Belukar',sim:58,aps:12,idx:38}],
+ scores:2.5,
+ rules:[{t:'minWeek',v:4},{t:'maxDay',v:2}]},
+{id:'henry',title:"HENRY'S FIRST",sub:'',genre:'Drama',lang:'English',mins:115,rating:'P13',
+ dist:'GSC Films',release:'2026-11-12',c1:'#101210',c2:'#4A5240',imax:0,
+ about:'A father and a son spend one weekend rebuilding a car and thirty years of silence. A quiet, awards-shaped drama on a limited preview run.',
+ comps:[{n:'Aftersun',sim:68,aps:14,idx:56},{n:'CODA',sim:61,aps:18,idx:54},{n:'Manchester by the Sea',sim:55,aps:12,idx:50}],
+ scores:2.5,
+ rules:[{t:'minWeek',v:3},{t:'maxDay',v:2}]}
+];
+
+/* ---- Shared titles published by the Creator in Create Film ---- */
+(function(){
+  function sync(){
+    let changed = false;
+    try{
+      const raw = localStorage.getItem('tgv.createfilm.titles');
+      if(!raw) return false;
+      const created = JSON.parse(raw);
+      if(!Array.isArray(created)) return false;
+      created.forEach((t,i)=>{
+        const id = 'shared-' + String(t.id || i).replace(/[^a-z0-9_-]/gi,'');
+        if(FILMS.some(f=>f.id===id || f.title===t.title)) return;
+        FILMS.push({
+          id, title:t.title, sub:t.expName || '', genre:t.genre || 'Feature', lang:t.lang || 'English',
+          mins:t.mins || 120, rating:t.cert || 'P13', dist:t.dist || 'TGV',
+          release:t.release || '2026-11-12', c1:'#171820', c2:t.color || '#E4002B',
+          imax:/IMAX/i.test(t.code || '') ? 1 : 0,
+          about:'Published by the Creator in Create Film. Already set up for rating and scheduling — just pick it from the slate.',
+          comps:[{n:'Comparable release',sim:62,aps:52,idx:58}],
+          scores:3.5,
+          rules:[{t:'minDay',v:3},{t:'maxDay',v:8}]
+        });
+        changed = true;
+      });
+    }catch(e){}
+    return changed;
+  }
+  sync();
+  addEventListener('storage', e=>{ if(e.key === 'tgv.createfilm.titles' && sync()) render(); });
+  addEventListener('message', e=>{ if(e.data && e.data.type === 'tgv.titles'){ sync(); render(); } });
+})();
+
+const DIMS = [
+  {k:'story',label:'Story & craft'},
+  {k:'cast', label:'Cast & star draw'},
+  {k:'heat', label:'Marketing heat'},
+  {k:'fit',  label:'Market fit'},
+  {k:'ip',   label:'Franchise strength'}
+];
+const W = {story:.22, cast:.20, heat:.22, fit:.20, ip:.16};
+
+const DOW = [{n:'Mon',f:.80},{n:'Tue',f:.86},{n:'Wed',f:.82},{n:'Thu',f:.88},{n:'Fri',f:1.10},{n:'Sat',f:1.34},{n:'Sun',f:1.20}];
+const DECAY = [1.00,.72,.52,.38,.28,.21,.16,.12,.09,.07];
+const WEEKS = [
+  {id:'W44',start:'2026-10-26',label:'W44 · 26 Oct'},
+  {id:'W45',start:'2026-11-02',label:'W45 · 2 Nov'},
+  {id:'W46',start:'2026-11-09',label:'W46 · 9 Nov'},
+  {id:'W47',start:'2026-11-16',label:'W47 · 16 Nov'}
+];
+
+/* rule catalogue — this is the part the programmer owns */
+const RULE_TYPES = {
+  minWeek:  {label:'Minimum sessions per week',  kind:'num',  def:12, unit:'sessions',
+             say:v=>`At least <b>${v} sessions</b> every week`,
+             why:'A weekly floor, however the demand looks.'},
+  minHall:  {label:'Every hall, every week',     kind:'none',
+             say:()=>`At least <b>1 session in every hall</b>, every week`,
+             why:'Wajib tayang — government-supported local titles must reach every screen.'},
+  minDay:   {label:'Minimum sessions per day',   kind:'num',  def:3, unit:'sessions',
+             say:v=>`At least <b>${v} sessions</b> every day`,
+             why:'Keeps the title visible in every day’s listings.'},
+  maxDay:   {label:'Maximum sessions per day',   kind:'num',  def:4, unit:'sessions',
+             say:v=>`No more than <b>${v} sessions</b> a day`,
+             why:'Protects the rest of the slate from one title hogging screens.'},
+  minScreens:{label:'Minimum screens',           kind:'num',  def:3, unit:'screens',
+             say:v=>`Play on at least <b>${v} screens</b>`,
+             why:'Spread, not depth — a wide release rather than a long run.'},
+  prime:    {label:'Prime-time guarantee',       kind:'num',  def:2, unit:'sessions',
+             say:v=>`At least <b>${v} session${v>1?'s':''}</b> between 19:00 and 22:00`,
+             why:'The shows that actually sell on a weekday.'},
+  noEarly:  {label:'No early sessions',          kind:'time', def:'12:00',
+             say:v=>`Nothing before <b>${v}</b>`,
+             why:'Ratings, or an audience that does not turn up before noon.'},
+  mustPlay: {label:'Must play until',            kind:'date', def:'2026-11-19',
+             say:v=>`Stays on screen until <b>${fmtShort(v)}</b>`,
+             why:'A contractual hold from the distributor.'},
+  imax:     {label:'IMAX contract',              kind:'none',
+             say:()=>`Must hold the <b>IMAX screen</b>`,
+             why:'The distributor paid for the format — it has to be used.'}
+};
+const PRESETS = {
+  'Blockbuster':   [{t:'minWeek',v:28},{t:'minDay',v:4},{t:'prime',v:2},{t:'maxDay',v:9}],
+  'Wajib tayang':  [{t:'minHall',v:null},{t:'minWeek',v:14},{t:'noEarly',v:'12:00'}],
+  'Wide release':  [{t:'minScreens',v:6},{t:'minDay',v:3},{t:'prime',v:2}],
+  'Standard run':  [{t:'minWeek',v:7},{t:'maxDay',v:4},{t:'prime',v:1}],
+  'Limited':       [{t:'minWeek',v:4},{t:'maxDay',v:2}],
+  'No rules':      []
+};
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const pd = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
+const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const money = n => 'RM ' + Math.round(n).toLocaleString('en-MY');
+const pad2 = n => String(n).padStart(2,'0');
+const hhmm = m => pad2(Math.floor(m/60)%24) + ':' + pad2(((m%60)+60)%60);
+const fmtShort = s => pd(s).toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+function hash(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+function rng(seed){ let s=seed>>>0||1; return ()=>{ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
+function weightedPick(pool, rand){
+  let t = pool.reduce((a,p)=>a+p.w,0), x = rand()*t;
+  for(const p of pool){ x -= p.w; if(x<=0) return p.f; }
+  return pool[pool.length-1].f;
+}
+const getFilm = id => FILMS.find(f=>f.id===id);
+const getCinema = n => CINEMAS.find(c=>c.name===n) || CINEMAS[0];
+const getWeek = () => WEEKS.find(w=>w.id===state.weekId) || WEEKS[1];
+const weekDates = w => { const s = pd(w.start); return DOW.map((d,i)=>({...d, date:addDays(s,i), idx:i})); };
+
+const PRE = 15, TURN = 15, OPEN = 0, CLOSE = 1440;
+function primeWeight(m){
+  const h = ((m%1440)+1440)%1440/60;
+  if(h<11) return .30; if(h<12) return .46; if(h<14) return .74; if(h<17) return .60;
+  if(h<19) return .86; if(h<22) return 1.45; if(h<24) return .72; return .34;
+}
+function weekIndexOf(film, weekStart){
+  return Math.floor(Math.floor((weekStart - pd(film.release))/86400000)/7);
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  tab:'rules',
+  filmId:'kudrat',
+  cinema:'Suria KLCC',
+  weekId:'W45',
+  scores:{}, comps:{}, rules:{},
+  plan:null,
+  dayIdx:0,
+  editing:null,
+  modal:false
+};
+let ROWID = 1;
+
+FILMS.forEach(f=>{
+  state.scores[f.id] = f.scores;
+  state.comps[f.id]  = f.comps.map(c=>({...c}));
+  state.rules[f.id]  = f.rules.map(r=>({rid:ROWID++, t:r.t, v:r.v, on:true}));
+});
+
+/* ============================================================
+   SCORING / FORECAST
+   ============================================================ */
+function composite(sc){
+  let t=0; DIMS.forEach(d=> t += (sc[d.k]??50)*W[d.k]); return t;
+}
+/* 1B — single 0-5 star score drives the same demand model (star*20 -> 0-100 index). */
+function scoreIdx(v){ return clamp((Number(v)||0)*20, 0, 100); }
+function starHTML(val){
+  const cls = [1,2,3,4,5].map(i=>{
+    let c='star';
+    if(val>=i) c+=' on'; else if(val>=i-0.5) c+=' half';
+    return c;
+  });
+  return [1,2,3,4,5].map(i=>`
+    <span class="${cls[i-1]}">
+      <span class="glyph">★</span>
+      <span class="hit l" data-star="${(i-0.5).toFixed(1)}"></span>
+      <span class="hit r" data-star="${i}"></span>
+    </span>`).join('');
+}
+function verdict(v){
+  if(v>=78) return {l:'Strong', c:'strong'};
+  if(v>=62) return {l:'Solid',  c:'solid'};
+  if(v>=45) return {l:'Watch',  c:'watch'};
+  return {l:'Weak', c:'weak'};
+}
+function anchorOf(comps){
+  let ws=0, aps=0, idx=0;
+  comps.forEach(c=>{ const s=c.sim/100; ws+=s; aps+=s*c.aps; idx+=s*c.idx; });
+  if(!ws) return {aps:0, idx:50};
+  return {aps:aps/ws, idx:idx/ws};
+}
+function ruleOn(list, t){ return list.find(r=>r.t===t && r.on); }
+
+function forecast(){
+  const film = getFilm(state.filmId);
+  const cinema = getCinema(state.cinema);
+  const week = getWeek();
+  const sc = state.scores[film.id];
+  const comps = state.comps[film.id];
+  const rules = state.rules[film.id].filter(r=>r.on);
+
+  const idx = scoreIdx(sc);
+  const anchor = anchorOf(comps);
+  const lift = (0.55 + 0.90*idx/100) / (0.55 + 0.90*Math.max(30,anchor.idx)/100);
+  const filmAPS = anchor.aps * lift;
+
+  const wi = weekIndexOf(film, pd(week.start));
+  const pre = wi < 0;
+  const decay = pre ? 1 : DECAY[clamp(wi,0,DECAY.length-1)];
+
+  const avgCap = cinema.total / cinema.screens.length;
+  const capScale = clamp(avgCap/120, .70, 2.20);
+
+  const rMinDay = ruleOn(rules,'minDay');
+  const rMaxDay = ruleOn(rules,'maxDay');
+  const rMinWeek = ruleOn(rules,'minWeek');
+  const rMinScreens = ruleOn(rules,'minScreens');
+  const rPrime = ruleOn(rules,'prime');
+  const rMinHall = ruleOn(rules,'minHall');
+  const rNoEarly = ruleOn(rules,'noEarly');
+
+  const maxDay = rMaxDay ? Number(rMaxDay.v) : 18;
+  const minDay = rMinDay ? Number(rMinDay.v) : 1;
+  const primeN = rPrime ? Number(rPrime.v) : 0;
+
+  const days = weekDates(week).map((d,i)=>{
+    const ceiling = filmAPS * 10 * d.f * decay * cinema.factor * capScale;
+    let n = 1;
+    while(n < Math.min(maxDay,18)){
+      if((ceiling/4.5)*Math.exp(-(n+1)/4.5) < 7) break;
+      n++;
+    }
+    const demand = n;
+    let binding = null;
+    if(minDay > n){ n = minDay; binding = 'minDay'; }
+    if(rMinScreens && Number(rMinScreens.v) > n){
+      n = Math.min(Number(rMinScreens.v), cinema.screens.length);
+      binding = 'minScreens';
+    }
+    if(primeN > n){ n = primeN; binding = 'prime'; }
+    n = Math.min(n, Math.max(maxDay, minDay));
+    return {dow:d.n, date:d.date, factor:d.f, ceiling, demand, shows:n, binding, admits:0, seats:0};
+  });
+
+  // weekly floor
+  const weekFloor = Math.max(rMinWeek ? Number(rMinWeek.v) : 0, rMinHall ? cinema.screens.length : 0);
+  let total = days.reduce((a,d)=>a+d.shows,0);
+  const weekBinding = (total < weekFloor) ? (rMinHall && cinema.screens.length >= (rMinWeek?Number(rMinWeek.v):0) ? 'minHall' : 'minWeek') : null;
+  if(total < weekFloor){
+    let need = weekFloor - total, guard = 0;
+    const order = [...days].sort((a,b)=>b.ceiling-a.ceiling);
+    while(need > 0 && guard++ < 300){
+      let moved = false;
+      for(const d of order){
+        if(need <= 0) break;
+        if(d.shows < Math.max(maxDay, 12)){ d.shows++; d.weekBump = true; need--; moved = true; }
+      }
+      if(!moved) break;
+    }
+  }
+
+  days.forEach(d=>{
+    d.admits = d.ceiling * (1 - Math.exp(-d.shows/4.5));
+    d.seats = d.shows * avgCap;
+  });
+
+  const tot = days.reduce((a,d)=>({
+    shows:a.shows+d.shows, admits:a.admits+d.admits, seats:a.seats+d.seats
+  }), {shows:0,admits:0,seats:0});
+  tot.occ = tot.seats ? tot.admits/tot.seats : 0;
+  tot.revenue = tot.admits * cinema.atp;
+
+  const bandPct = pre ? .34 : clamp(.14 + Math.abs(idx-anchor.idx)/260, .11, .24);
+
+  return {
+    film, cinema, week, days, total:tot, idx, anchor, lift, filmAPS, decay, wi, pre,
+    bandPct, maxDay, minDay, primeN,
+    rules:{rMinWeek,rMinHall,rMinDay,rMaxDay,rMinScreens,rPrime,rNoEarly,
+           rMustPlay:ruleOn(rules,'mustPlay'), rImax:ruleOn(rules,'imax')},
+    weekBinding,
+    demandTotal: days.reduce((a,d)=>a+d.demand,0)
+  };
+}
+
+/* ============================================================
+   SCHEDULE BUILD
+   ============================================================ */
+function poolFor(type, excludeId, date){
+  const out = [];
+  FILMS.forEach(f=>{
+    if(f.id === excludeId) return;
+    if(pd(f.release) > date) return;
+    let w = 1;
+    if(type==='IMAX'){ if(!f.imax) return; w = anchorOf(f.comps.map(c=>({...c}))).aps; }
+    else if(type==='Beanie'||type==='Junior'){ w = Math.max(6, 60 - anchorOf(f.comps.map(c=>({...c}))).aps); }
+    else if(type==='Indulge'||type==='BEREX'){ w = 18 + anchorOf(f.comps.map(c=>({...c}))).aps*.6; }
+    else { w = 4 + anchorOf(f.comps.map(c=>({...c}))).aps; }
+    out.push({f, w});
+  });
+  return out;
+}
+function suit(screen, film, imaxRule){
+  const aps = anchorOf(film.comps.map(c=>({...c}))).aps;
+  const strength = clamp((aps-20)/55, 0, 1);
+  switch(screen.type){
+    case 'IMAX': return (film.imax || imaxRule) ? 1.55 : 0;
+    case 'Beanie': case 'Junior': return .15 + (1-strength)*.55;
+    case 'Indulge': case 'BEREX': return .72;
+    default: return 1.0 + clamp(screen.cap/260, 0, .35);
+  }
+}
+
+function buildDay(fc, di){
+  const film = fc.film, cinema = fc.cinema;
+  const d = fc.days[di];
+  const block = film.mins + PRE;
+  const rand = rng(hash(cinema.name + '|' + d.date.toDateString() + '|' + film.id));
+  const noEarly = fc.rules.rNoEarly ? toMin(fc.rules.rNoEarly.v) : 0;
+  const openAt = Math.max(OPEN, film.rating==='18' ? 720 : 0, noEarly);
+  const lateStart = d.factor > 1.0 ? 1410 : 1335;
+  const rows = [];
+  const need = d.shows;
+
+  /* targets — prime guarantee first, then spread */
+  const targets = [];
+  for(let i=0;i<fc.primeN;i++) targets.push(1140 + i*45);
+  const spread = Math.max(0, need - targets.length);
+  const winEnd = Math.min(CLOSE, lateStart + block);
+  const usable = Math.max(60, winEnd - openAt - block);
+  for(let k=0;k<spread;k++){
+    targets.push(Math.round((openAt + (spread===1 ? usable/2 : usable*k/(spread-1)))/15)*15);
+  }
+  targets.sort((a,b)=>a-b);
+
+  const perScreen = {};
+  const usableScreens = cinema.screens.filter(s=>suit(s, film, !!fc.rules.rImax) >= .5).length;
+  let allowPer = 1;
+
+  targets.forEach((target, k)=>{
+    if(k >= usableScreens) allowPer = 3;
+    let best = null;
+    cinema.screens.forEach(screen=>{
+      const su = suit(screen, film, !!fc.rules.rImax);
+      if(su <= 0) return;
+      if((perScreen[screen.name]||0) >= allowPer) return;
+      for(let off=0; off<=75; off+=15){
+        const signs = off===0?[1]:[1,-1];
+        for(const sg of signs){
+          const t = Math.round((target + off*sg)/15)*15;
+          if(t < openAt || t + block > CLOSE || t > lateStart) continue;
+          const clash = rows.some(r => r.screen===screen.name && !(t + block + TURN <= r.start || t >= r.end + TURN));
+          if(clash) continue;
+          const sc = primeWeight(t) * su - off*.006;
+          if(!best || sc > best.sc) best = {screen, start:t, sc};
+        }
+      }
+    });
+    if(!best) return;
+    rows.push({
+      id:'r'+(ROWID++), screen:best.screen.name, filmId:film.id,
+      start:best.start, end:best.start+block, status:'Planned', mine:true
+    });
+    perScreen[best.screen.name] = (perScreen[best.screen.name]||0)+1;
+  });
+
+  /* wajib tayang — force one session into every hall across the week (handled after) */
+
+  /* fill gaps with the rest of the slate */
+  cinema.screens.forEach(screen=>{
+    const pool = poolFor(screen.type, film.id, d.date);
+    if(!pool.length) return;
+    const lr = rng(hash(cinema.name + d.date.toDateString() + screen.name));
+    const occ = rows.filter(r=>r.screen===screen.name).sort((a,b)=>a.start-b.start);
+    const gaps = [];
+    let cur = OPEN;
+    occ.forEach(r=>{ if(r.start-cur>0) gaps.push([cur, r.start]); cur = Math.max(cur, r.end+TURN); });
+    if(CLOSE-cur>0) gaps.push([cur, CLOSE]);
+
+    gaps.forEach(([gs,ge])=>{
+      let t = gs + Math.round(lr()*10);
+      let last = null, guard = 0;
+      while(guard++ < 8){
+        let f = weightedPick(pool, lr);
+        if(f.id===last && pool.length>1) f = weightedPick(pool, lr);
+        if(f.rating==='18' && t<720){
+          const safe = pool.filter(p=>p.f.rating!=='18');
+          if(safe.length) f = weightedPick(safe, lr); else { t+=30; continue; }
+        }
+        const len = f.mins + PRE;
+        if(t+len > ge) break;
+        rows.push({id:'r'+(ROWID++), screen:screen.name, filmId:f.id, start:t, end:t+len, status:'Open', mine:false});
+        last = f.id; t += len + TURN;
+      }
+    });
+  });
+
+  seedBase(rows, film.id);
+  reseat(rows, film.id, d.admits);
+
+  const order = {};
+  cinema.screens.map(s=>s.name).sort((a,b)=>a.localeCompare(b,'en',{sensitivity:'base'})).forEach((n,i)=>order[n]=i);
+  rows.sort((a,b)=> (order[a.screen]-order[b.screen]) || (a.start-b.start));
+  return rows;
+}
+
+/* distribute the day's admits across our film's sessions, then seat everything */
+function reseat(rows, filmId, dayAdmits){
+  const mine = rows.filter(r=>r.filmId===filmId);
+  if(mine.length){
+    const wsum = mine.reduce((a,r)=> a + primeWeight(r.start)*capOf(r.screen), 0) || 1;
+    mine.forEach(r=>{
+      const cap = capOf(r.screen);
+      r.cap = cap;
+      r.sold = Math.min(cap, Math.round(dayAdmits * primeWeight(r.start)*cap / wsum));
+      r.locked = Math.min(cap - r.sold, (r.locked||0));
+      r.avail = cap - r.sold - r.locked;
+      r.occ = r.sold/cap;
+    });
+  }
+  // everything already on the grid keeps its occupancy; only rescale when the room changed
+  rows.filter(r=>r.filmId!==filmId).forEach(r=>{
+    const cap = capOf(r.screen);
+    if(r.sold === undefined){ r.cap = cap; r.sold = Math.round(cap*.25); r.locked = 0; }
+    else if(r.cap !== cap){
+      const ratio = r.cap ? r.sold/r.cap : .25;
+      r.cap = cap; r.sold = Math.round(cap*ratio);
+    }
+    r.cap = cap;
+    r.avail = cap - r.sold - (r.locked||0);
+    r.occ = cap ? r.sold/cap : 0;
+  });
+}
+function capOf(name){ const s = getCinema(state.cinema).screens.find(x=>x.name===name); return s ? s.cap : 100; }
+function toMin(t){ const [h,m] = String(t).split(':').map(Number); return h*60 + (m||0); }
+
+/* seat the existing slate — occupancy follows each title's own demand and its time slot */
+function seedBase(rows, filmId){
+  const rand = rng(hash(state.cinema + state.weekId + state.dayIdx));
+  rows.filter(r=>r.filmId!==filmId && r.sold===undefined).forEach(r=>{
+    const f = getFilm(r.filmId);
+    const aps = f ? anchorOf(f.comps.map(c=>({...c}))).aps : 20;
+    const base = clamp(.14 + .40*(aps/70), .05, .60);
+    const occ = clamp(base * primeWeight(r.start)/1.15 * (.70 + rand()*.65), .02, .85);
+    r.cap = capOf(r.screen);
+    r.sold = Math.round(r.cap*occ);
+    r.locked = Math.round(rand()*2);
+    r.avail = r.cap - r.sold - r.locked;
+    r.occ = r.sold/r.cap;
+  });
+}
+
+function buildPlan(){
+  const fc = forecast();
+  const days = fc.days.map((d,i)=>{
+    const rows = buildDay(fc, i);
+    return {...d, idx:i, rows};
+  });
+
+  /* wajib tayang: every hall must hold at least one session across the week */
+  if(fc.rules.rMinHall){
+    const used = new Set();
+    days.forEach(d=> d.rows.forEach(r=>{ if(r.filmId===fc.film.id) used.add(r.screen); }));
+    const missing = fc.cinema.screens.filter(s=>!used.has(s.name));
+    if(missing.length){
+      const order = [...days].sort((a,b)=>b.ceiling-a.ceiling);
+      missing.forEach((screen, i)=>{
+        const day = order[i % order.length];
+        if(placeWajib(day, screen, fc)){
+          sortDay(day.rows);
+          reseat(day.rows, fc.film.id, day.admits);
+        }
+      });
+    }
+  }
+  return {fc, days};
+}
+
+/* put one session on a hall that has none — bumping the weakest session if it is full */
+function placeWajib(day, screen, fc){
+  const block = fc.film.mins + PRE;
+  const findGap = ()=>{
+    const taken = day.rows.filter(r=>r.screen===screen.name).sort((a,b)=>a.start-b.start);
+    const gaps = []; let cur = OPEN;
+    taken.forEach(r=>{ if(r.start-cur>0) gaps.push([cur,r.start]); cur = Math.max(cur, r.end+TURN); });
+    if(CLOSE-cur>0) gaps.push([cur,CLOSE]);
+    const fits = gaps.filter(([a,b])=> b-a >= block);
+    if(!fits.length) return null;
+    fits.sort((a,b)=> (primeWeight(b[0]) + b[0]/20000) - (primeWeight(a[0]) + a[0]/20000));
+    const g = fits[0];
+    let t = Math.round((g[0] + Math.min(45,(g[1]-g[0]-block)/2))/15)*15;
+    if(t + block > g[1]) t = g[0];
+    return t;
+  };
+  let t = findGap();
+  if(t === null){
+    const weakest = day.rows
+      .filter(r=> r.screen===screen.name && r.filmId!==fc.film.id)
+      .sort((a,b)=> (primeWeight(a.start)*a.sold) - (primeWeight(b.start)*b.sold))[0];
+    if(!weakest) return false;
+    day.rows = day.rows.filter(r=>r.id!==weakest.id);
+    t = findGap();
+    if(t === null) return false;
+  }
+  day.rows.push({id:'r'+(ROWID++), screen:screen.name, filmId:fc.film.id,
+                 start:t, end:t+block, status:'Planned', mine:true, wajib:true});
+  return true;
+}
+
+/* ============================================================
+   RENDER — RAIL
+   ============================================================ */
+function renderRail(){
+  const film = getFilm(state.filmId);
+  const sc = state.scores[film.id];
+  const idx = scoreIdx(sc);
+  const v = verdict(idx);
+  const comps = state.comps[film.id];
+  const anchor = anchorOf(comps);
+  const delta = idx - anchor.idx;
+  const fc = forecast();
+
+  const starVal = Number(sc)||0;
+  const starsBlock = starHTML(starVal);
+
+  const cmps = comps.map((c,i)=>`
+    <div class="cmprow">
+      <div class="h">
+        <span class="nm">${esc(c.n)}</span>
+        <button class="x" data-act="rmcmp" data-i="${i}" title="Remove">×</button>
+      </div>
+      <div class="f">
+        <input type="range" min="10" max="100" value="${c.sim}" data-cmp="${i}" style="--p:${c.sim}%"/>
+        <span class="p">${c.sim}%</span>
+        <span class="a">${c.aps} APS</span>
+      </div>
+    </div>`).join('');
+
+  $('#rail').innerHTML = `
+    <div class="filmhead">
+      <div class="poster" style="background:linear-gradient(150deg,${film.c1},${film.c2})"><span>${esc(film.title)}</span></div>
+      <div class="t">
+        <h2>${esc(film.title)}</h2>
+        <div class="m">${film.genre}<br>${film.lang} · ${film.mins} min · ${film.rating}</div>
+        <button data-act="pickfilm">Change film</button>
+      </div>
+    </div>
+
+    <div class="lbl">Your score</div>
+    <div class="scorebox stars">
+      <div class="starrow"><span class="sf">${starVal.toFixed(1)}</span><span class="so">/5</span><span class="pill ${v.c}">${v.l}</span></div>
+      <div class="stars" data-act="stars" title="Click to set a 0-5 star score (half-steps)">${starsBlock}</div>
+      <div class="idxnote">${delta>=0?'▲':'▼'} ${Math.abs(Math.round(delta))} vs comparables (${Math.round(anchor.idx)})</div>
+    </div>
+
+    <div class="lbl" style="margin-top:20px">Compare with <button class="btn sm ghost" data-act="addcmp" style="margin-left:auto">+ Add</button></div>
+    <div class="cmp">${cmps || '<div class="idxnote" style="padding:4px 0">No comparables — add at least one.</div>'}</div>
+
+    <div class="summary">
+      <div><span>Week admits</span><b>${Math.round(fc.total.admits).toLocaleString()}</b></div>
+      <div><span>Sessions</span><b>${fc.total.shows}</b></div>
+    </div>`;
+}
+
+/* ============================================================
+   RENDER — RULES
+   ============================================================ */
+function renderRules(){
+  const list = state.rules[state.filmId];
+  const fc = forecast();
+
+  const cards = list.map(r=>{
+    const def = RULE_TYPES[r.t];
+    let ctl = '';
+    if(def.kind === 'num'){
+      ctl = `<input type="number" min="1" max="40" value="${r.v}" data-rule="${r.rid}"/>`;
+    } else if(def.kind === 'time'){
+      ctl = `<input type="time" value="${r.v}" data-rule="${r.rid}"/>`;
+    } else if(def.kind === 'date'){
+      ctl = `<input type="date" value="${r.v}" data-rule="${r.rid}"/>`;
+    }
+    return `<div class="rule ${r.on?'':'off'} ${def.kind==='none'?'soft':''}">
+      <span class="dot"></span>
+      <div class="body">
+        <div class="txt">${def.say(r.v)}</div>
+        <div class="sub">${def.why}</div>
+      </div>
+      <div class="ctl">${ctl}</div>
+      <button class="sw ${r.on?'on':''}" data-act="togglerule" data-rid="${r.rid}"></button>
+      <button class="rm" data-act="rmrule" data-rid="${r.rid}">×</button>
+    </div>`;
+  }).join('');
+
+  const avail = Object.keys(RULE_TYPES).filter(k=>!list.some(r=>r.t===k));
+
+  const presetBtns = Object.keys(PRESETS).map(p=>
+    `<button class="preset" data-act="preset" data-p="${p}">${p}</button>`).join('');
+
+  return `
+    <div class="pagehd">
+      <h1>Rules</h1>
+      <p>How many sessions this film gets is your call, not the model's. The forecast proposes a number; these rules override it. Everything here is per film and saved with it.</p>
+    </div>
+
+    <div class="lbl">Start from a template</div>
+    <div class="presets">${presetBtns}</div>
+
+    <div class="lbl">Active rules <span style="color:var(--dim2);font-weight:600">${list.filter(r=>r.on).length} on</span></div>
+    <div class="rules">${cards || '<div class="empty">No rules. The plan will follow demand only.</div>'}</div>
+
+    ${avail.length?`<div class="addrow">
+      <span class="lbl2">Add:</span>
+      ${avail.map(k=>`<button class="addrule" data-act="addrule" data-t="${k}">${RULE_TYPES[k].label}</button>`).join('')}
+    </div>`:''}
+
+    ${renderBinding(fc)}`;
+}
+
+function renderBinding(fc){
+  const lines = [];
+  if(fc.rules.rMinHall){
+    lines.push(`<b>Wajib tayang is on.</b> All ${fc.cinema.screens.length} halls get at least one session this week, whether the demand justifies it or not.`);
+  }
+  if(fc.weekBinding === 'minWeek'){
+    lines.push(`<b>Your weekly minimum is forcing ${fc.total.shows} sessions.</b> Demand alone would take ${fc.demandTotal}.`);
+  }
+  const dayBinds = fc.days.filter(d=>d.binding);
+  if(dayBinds.length){
+    const by = {};
+    dayBinds.forEach(d=> by[d.binding] = (by[d.binding]||0)+1);
+    const txt = Object.entries(by).map(([k,n])=>`${RULE_TYPES[k].label.toLowerCase()} on ${n} day${n>1?'s':''}`).join(', ');
+    lines.push(`<b>${txt}</b> — pushing the count above what demand supports.`);
+  }
+  if(!lines.length){
+    lines.push(`<b>No rule is binding.</b> Demand sets the count on its own — ${fc.total.shows} sessions this week.`);
+  } else if(!fc.rules.rMinHall && !fc.weekBinding && !dayBinds.length){
+    lines.push(`Demand sets the count on its own — ${fc.total.shows} sessions this week.`);
+  }
+  return `<div class="bind"><span class="i">◈</span><div>${lines.join('<br><br>')}</div></div>`;
+}
+
+/* ============================================================
+   RENDER — FORECAST
+   ============================================================ */
+function renderForecast(){
+  const fc = forecast();
+  const t = fc.total;
+  const max = Math.max(...fc.days.map(d=>d.admits)) || 1;
+
+  const bars = fc.days.map(d=>{
+    const peak = d.admits === max;
+    return `<div class="bcol ${peak?'peak':''}">
+      <span class="n">${Math.round(d.admits)}</span>
+      <div class="plot"><div class="b" style="height:${Math.max(3, Math.round(d.admits/max*118))}px"></div></div>
+      <span class="d">${d.dow}<em>${d.date.getDate()}</em></span>
+    </div>`;
+  }).join('');
+
+  const rows = fc.days.map(d=>`
+    <div class="row"><span>${d.dow} ${d.date.getDate()}</span><b>${d.shows} shows · ${Math.round(d.admits).toLocaleString()} admits · ${Math.round(d.occ*100)}%</b></div>`).join('');
+
+  return `
+    <div class="pagehd">
+      <h1>Forecast</h1>
+      <p>${esc(fc.film.title)} at ${esc(fc.cinema.name)}, ${fc.week.label}. Your score sets the demand; your rules set the session count.</p>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="k">Weekly admits</div><div class="v">${Math.round(t.admits).toLocaleString()}</div>
+        <div class="f">±${Math.round(fc.bandPct*100)}% · ${Math.round(t.admits*(1-fc.bandPct)).toLocaleString()}–${Math.round(t.admits*(1+fc.bandPct)).toLocaleString()}</div></div>
+      <div class="kpi"><div class="k">Sessions</div><div class="v">${t.shows}</div><div class="f">${(t.shows/7).toFixed(1)} per day</div></div>
+      <div class="kpi"><div class="k">Occupancy</div><div class="v">${Math.round(t.occ*100)}<small>%</small></div><div class="f">${t.seats.toLocaleString()} seats offered</div></div>
+      <div class="kpi"><div class="k">Revenue</div><div class="v">${money(t.revenue)}</div><div class="f">at RM ${fc.cinema.atp.toFixed(2)} ATP</div></div>
+    </div>
+
+    <div class="derive">
+      <div class="bars">${bars}</div>
+    </div>
+
+    ${renderBinding(fc)}
+
+    <div class="derive">
+      <div class="row"><span>Comparable admits per show</span><b>${fc.anchor.aps.toFixed(1)}</b></div>
+      <div class="row"><span>Your index vs theirs (${Math.round(fc.idx)} / ${Math.round(fc.anchor.idx)})</span><b>${fc.lift>=1?'+':''}${((fc.lift-1)*100).toFixed(0)}%</b></div>
+      <div class="row"><span>Film admits per show at full demand</span><b>${fc.filmAPS.toFixed(1)}</b></div>
+      <div class="row"><span>Week ${fc.wi+1} decay</span><b>× ${fc.decay.toFixed(2)}</b></div>
+      <div class="row t"><span>Sessions demanded → planned</span><b>${fc.demandTotal} → ${t.shows}</b></div>
+    </div>`;
+}
+
+/* ============================================================
+   RENDER — SCHEDULE
+   ============================================================ */
+function renderSchedule(){
+  if(!state.plan) return `
+    <div class="pagehd"><h1>Schedule</h1>
+    <p>Nothing generated yet. Set your rules, then hit <b>Generate schedule</b>.</p></div>
+    <div class="empty" style="border:1px dashed var(--line);border-radius:9px">
+      The plan will appear here — one week, every screen, in Screen Schedule format.<br><br>
+      <button class="btn red" data-act="gen" style="margin-top:6px">Generate schedule</button>
+    </div>`;
+
+  const {fc, days} = state.plan;
+  const day = days[state.dayIdx];
+  const mine = day.rows.filter(r=>r.filmId===fc.film.id);
+
+  const totals = day.rows.reduce((a,r)=>({sold:a.sold+r.sold,locked:a.locked+(r.locked||0),avail:a.avail+r.avail,cap:a.cap+r.cap}),{sold:0,locked:0,avail:0,cap:0});
+
+  const groups = new Map();
+  day.rows.forEach(r=>{
+    if(!groups.has(r.screen)) groups.set(r.screen,[]);
+    groups.get(r.screen).push(r);
+  });
+
+  let body = '';
+  [...groups.entries()].forEach(([scr, list])=>{
+    list.sort((a,b)=>a.start-b.start);
+    list.forEach(r=>{
+      const f = getFilm(r.filmId);
+      const cls = r.filmId===fc.film.id ? 'mine' : '';
+      const oc = r.occ>=.55?'hi':r.occ>=.25?'md':'lo';
+      body += `<tr class="${cls}" data-act="edit" data-id="${r.id}">
+        <td class="scr">${esc(r.screen)}</td>
+        <td class="film">${esc(f?f.title:r.filmId)}</td>
+        <td><span class="tval">${hhmm(r.start)}</span><span class="swp"><button data-act="swap" data-v="${r.id}" data-dir="-1" title="Switch with the session above">▲</button><button data-act="swap" data-v="${r.id}" data-dir="1" title="Switch with the session below">▼</button></span></td>
+        <td>${hhmm(r.end)}</td>
+        <td><span class="tag ${r.status.toLowerCase()}">${r.status}</span></td>
+        <td class="n">${r.sold}</td>
+        <td class="n">${r.avail}</td>
+        <td class="n">${r.cap}</td>
+        <td class="n oc ${oc}">${(r.occ*100).toFixed(1)}%</td>
+        <td class="n" style="color:var(--dim2)">✎</td>
+      </tr>`;
+    });
+    const st = list.reduce((a,r)=>({sold:a.sold+r.sold,avail:a.avail+r.avail,cap:a.cap+r.cap}),{sold:0,avail:0,cap:0});
+    body += `<tr class="sub">
+      <td colspan="5">${esc(scr)} — ${list.length} session${list.length>1?'s':''}</td>
+      <td class="n">${st.sold}</td><td class="n">${st.avail}</td><td class="n">${st.cap}</td>
+      <td class="n">${st.cap?((st.sold/st.cap)*100).toFixed(1):'0.0'}%</td><td></td></tr>`;
+  });
+
+  body += `<tr class="grand">
+    <td colspan="5">Grand total · ${day.rows.length} sessions</td>
+    <td class="n">${totals.sold}</td><td class="n">${totals.avail}</td><td class="n">${totals.cap}</td>
+    <td class="n">${totals.cap?((totals.sold/totals.cap)*100).toFixed(1):'0.0'}%</td><td></td></tr>`;
+
+  const dayTabs = days.map((d,i)=>`
+    <button class="day ${i===state.dayIdx?'on':''}" data-act="day" data-i="${i}">
+      ${d.dow}<b>${d.date.getDate()}</b>
+    </button>`).join('');
+
+  const dateStr = day.date.toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'short',year:'numeric'});
+
+  const covered = new Set();
+  days.forEach(d=> d.rows.forEach(r=>{ if(r.filmId===fc.film.id) covered.add(r.screen); }));
+  const hallLine = fc.rules.rMinHall
+    ? ` Wajib tayang: ${covered.size} of ${fc.cinema.screens.length} halls covered this week.`
+    : '';
+
+  return `
+    <div class="pagehd">
+      <h1>${esc(fc.cinema.name)}</h1>
+      <p>${dateStr} · ${mine.length} planned session${mine.length===1?'':'s'} for ${esc(fc.film.title)}.${hallLine} Click any row to edit it.</p>
+    </div>
+
+    <div class="schedbar">
+      <div class="days">${dayTabs}</div>
+      <div style="flex:1"></div>
+      <button class="btn ghost sm" data-act="addsession">+ Add session</button>
+      <button class="btn ghost sm" data-act="gen">Regenerate</button>
+    </div>
+
+    <div class="tblwrap">
+      <div class="tblscroll">
+        <table class="s">
+          <thead><tr>
+            <th>Screen</th><th>Film</th><th>Showing</th><th>Finishing</th><th>Status</th>
+            <th class="n">Sold</th><th class="n">Avail</th><th class="n">Capacity</th><th class="n">Occ %</th><th></th>
+          </tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+      <div class="foot">
+        <div class="l">
+          <span><i class="sw2" style="background:var(--red-lt);box-shadow:inset 0 0 0 1px #F7D3D9"></i>Planned for ${esc(fc.film.title)}</span>
+          <span><i class="sw2" style="background:#fff;box-shadow:inset 0 0 0 1px var(--line)"></i>Already on the grid</span>
+        </div>
+        <div>Click a row to edit · drag onto another session to switch time slots · ▲▼ switches with the row above/below · full-day 00:00–24:00 window</div>
+      </div>
+    </div>`;
+}
+
+/* ============================================================
+   RENDER — MAIN
+   ============================================================ */
+function render(){
+  renderRail();
+  const tabs = [['rules','Rules'],['forecast','Forecast'],['schedule','Schedule']];
+  const nav = tabs.map(([k,l])=>{
+    const n = k==='rules' ? state.rules[state.filmId].filter(r=>r.on).length
+      : k==='schedule' && state.plan ? state.plan.days[state.dayIdx].rows.filter(r=>r.filmId===state.filmId).length : null;
+    return `<button class="tab ${state.tab===k?'on':''}" data-act="tab" data-t="${k}">${l}${n!==null?`<span class="cnt">${n}</span>`:''}</button>`;
+  }).join('');
+
+  let inner = '';
+  if(state.tab==='rules') inner = renderRules();
+  else if(state.tab==='forecast') inner = renderForecast();
+  else inner = renderSchedule();
+
+  $('#main').innerHTML = `<div class="tabs">${nav}</div>${inner}`;
+  $('#cin').value = state.cinema;
+  $('#wk').value = state.weekId;
+}
+
+/* ============================================================
+   DRAWER — session editor
+   ============================================================ */
+function openEdit(id){
+  const {fc, days} = state.plan;
+  const day = days[state.dayIdx];
+  const row = day.rows.find(r=>r.id===id);
+  if(!row) return;
+  state.editing = {id, dayIdx:state.dayIdx};
+  drawDrawer(row, day, fc);
+  $('#scrim').classList.add('on');
+  $('#drawer').classList.add('on');
+}
+function closeEdit(){
+  state.editing = null;
+  $('#scrim').classList.remove('on');
+  $('#drawer').classList.remove('on');
+}
+
+function drawDrawer(row, day, fc){
+  const film = getFilm(row.filmId);
+  const cinema = fc.cinema;
+  const block = film.mins + PRE;
+  const conflicts = day.rows.filter(r=> r.id!==row.id && r.screen===row.screen &&
+    !(row.start + block + TURN <= r.start || row.start >= r.end + TURN));
+
+  // soft rule checks — never block, just say it out loud
+  const breaks = [];
+  if(fc.rules.rNoEarly && row.start < toMin(fc.rules.rNoEarly.v))
+    breaks.push(`Starts <b>${hhmm(row.start)}</b>, before your ${fc.rules.rNoEarly.v} cut-off`);
+  if(row.status === 'Closed')
+    breaks.push('Marked <b>Closed</b> — this session will not sell');
+
+  const screenOpts = cinema.screens.map(s=>`<option ${s.name===row.screen?'selected':''}>${s.name}</option>`).join('');
+  const filmOpts = FILMS.filter(f=>pd(f.release)<=day.date).map(f=>
+    `<option value="${f.id}" ${f.id===row.filmId?'selected':''}>${esc(f.title)}</option>`).join('');
+
+  $('#drawer').innerHTML = `
+    <div class="hd">
+      <h3>Edit session</h3>
+      <button class="x" data-act="closeedit">×</button>
+    </div>
+    <div class="bd">
+      <div class="fld"><label>Film</label><select id="ef">${filmOpts}</select></div>
+      <div class="fld"><label>Screen</label><select id="es">${screenOpts}</select></div>
+      <div class="fld"><label>Start time</label>
+        <div class="timewrap">
+          <button data-act="nudge" data-v="-15">−</button>
+          <input type="time" id="et" value="${hhmm(row.start)}"/>
+          <button data-act="nudge" data-v="15">+</button>
+        </div>
+      </div>
+      <div class="fld"><label>Status</label>
+        <select id="est">
+          ${['Planned','Open','Closed'].map(s=>`<option ${s===row.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="note">
+        <b>${esc(film.title)}</b> runs ${film.mins} min + ${PRE} min pre-roll.<br>
+        Ends at <b>${hhmm(row.start + block)}</b>. Next session on this screen can start ${hhmm(row.start + block + TURN)}.
+      </div>
+      ${conflicts.length?`<div class="warnbox">
+        <b>Overlaps ${conflicts.length} session${conflicts.length>1?'s':''} on ${esc(row.screen)}:</b><br>
+        ${conflicts.map(c=>`${esc(getFilm(c.filmId).title)} ${hhmm(c.start)}–${hhmm(c.end)}`).join('<br>')}
+        <br><br>Move the time or pick another screen before saving.
+      </div>`:''}
+      ${breaks.length?`<div class="softbox">
+        <b>Against your own rules</b><br>${breaks.join('<br>')}
+        <br><br>You can still save — this is your call.
+      </div>`:''}
+    </div>
+    <div class="ft">
+      <button class="btn del" data-act="deletesess">Delete</button>
+      <button class="btn ghost" data-act="dupsess">Duplicate</button>
+      <button class="btn red" data-act="savesess" ${conflicts.length?'disabled':''}>${conflicts.length?'Resolve overlap':'Save'}</button>
+    </div>`;
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+document.addEventListener('input', e=>{
+  const t = e.target;
+
+  /* 1B: rating is a single star score, handled by click on the star widget */
+  if(t.dataset.cmp !== undefined){
+    state.comps[state.filmId][Number(t.dataset.cmp)].sim = Number(t.value);
+    t.style.setProperty('--p', t.value + '%');
+    renderRail();
+    if(state.tab==='forecast') render();
+    return;
+  }
+  if(t.dataset.rule){
+    const r = state.rules[state.filmId].find(x=>x.rid === Number(t.dataset.rule));
+    if(r){ r.v = t.type==='number' ? Number(t.value) : t.value; render(); }
+    return;
+  }
+  if(t.id === 'et'){ // live time change in drawer
+    const row = currentRow();
+    if(row){ row.start = toMin(t.value); row.end = row.start + getFilm(row.filmId).mins + PRE; drawDrawer(row, state.plan.days[state.editing.dayIdx], state.plan.fc); }
+    return;
+  }
+});
+
+document.addEventListener('change', e=>{
+  const t = e.target;
+  if(t.id === 'cin'){ state.cinema = t.value; state.plan = null; render(); return; }
+  if(t.id === 'wk'){ state.weekId = t.value; state.plan = null; render(); return; }
+  if(t.id === 'es'){
+    const row = currentRow();
+    if(row){ row.screen = t.value; row.cap = capOf(row.screen); drawDrawer(row, state.plan.days[state.editing.dayIdx], state.plan.fc); }
+    return;
+  }
+  if(t.id === 'ef'){
+    const row = currentRow();
+    if(row){ row.filmId = t.value; row.end = row.start + getFilm(row.filmId).mins + PRE; drawDrawer(row, state.plan.days[state.editing.dayIdx], state.plan.fc); }
+    return;
+  }
+});
+
+function currentRow(){
+  if(!state.editing || !state.plan) return null;
+  return state.plan.days[state.editing.dayIdx].rows.find(r=>r.id===state.editing.id);
+}
+
+document.addEventListener('click', e=>{
+  const el = e.target.closest('[data-act]');
+  if(!el){
+    if(e.target.id==='scrim') closeEdit();
+    if(e.target.id==='modal') closeModal();
+    return;
+  }
+  const act = el.dataset.act;
+
+  if(act === 'tab'){ state.tab = el.dataset.t; render(); return; }
+  if(act === 'gen'){ generate(); return; }
+  if(act === 'day'){ state.dayIdx = Number(el.dataset.i); render(); return; }
+  if(act === 'swap'){
+    if(!state.plan) return;
+    const day = state.plan.days[state.dayIdx];
+    const groups = new Map();
+    day.rows.forEach(r=>{ if(!groups.has(r.screen)) groups.set(r.screen,[]); groups.get(r.screen).push(r); });
+    const ordered = [];
+    groups.forEach(list=>{ list.sort((a,b)=>a.start-b.start).forEach(r=>ordered.push(r)); });
+    const i = ordered.findIndex(r=>r.id===el.dataset.v), j = i + Number(el.dataset.dir);
+    if(i<0 || j<0 || j>=ordered.length){ toast('No session to switch with'); return; }
+    const a=ordered[i], b=ordered[j], ad=a.end-a.start, bd=b.end-b.start, as=a.start;
+    a.start = clamp(b.start, OPEN, CLOSE-ad); a.end = a.start + ad;
+    b.start = clamp(as,     OPEN, CLOSE-bd); b.end = b.start + bd;
+    render(); const of = getFilm(b.filmId); toast('Switched with ' + (of?of.title:'session')); return;
+  }
+  if(act === 'edit'){
+    if(performance.now() < (window.__suppressUntil||0)) return;
+    openEdit(el.dataset.id); return;
+  }
+  if(act === 'stars'){
+    const sv = e.target.dataset.star;
+    if(sv!==undefined){ state.scores[state.filmId] = Number(sv); renderRail(); if(state.tab==='forecast') render(); }
+    return;
+  }
+  if(act === 'closeedit'){ closeEdit(); return; }
+
+  if(act === 'pickfilm'){ openModal(); return; }
+  if(act === 'pick'){ state.filmId = el.dataset.id; state.plan = null; closeModal(); render(); return; }
+
+  if(act === 'togglerule'){
+    const r = state.rules[state.filmId].find(x=>x.rid===Number(el.dataset.rid));
+    if(r) r.on = !r.on;
+    render(); return;
+  }
+  if(act === 'rmrule'){
+    state.rules[state.filmId] = state.rules[state.filmId].filter(x=>x.rid!==Number(el.dataset.rid));
+    render(); return;
+  }
+  if(act === 'addrule'){
+    const t = el.dataset.t;
+    state.rules[state.filmId].push({rid:ROWID++, t, v:RULE_TYPES[t].def, on:true});
+    render(); return;
+  }
+  if(act === 'preset'){
+    const p = el.dataset.p;
+    state.rules[state.filmId] = PRESETS[p].map(r=>({rid:ROWID++, t:r.t, v:r.v, on:true}));
+    render(); toast(p + ' rules applied'); return;
+  }
+
+  if(act === 'rmcmp'){
+    state.comps[state.filmId].splice(Number(el.dataset.i),1);
+    render(); return;
+  }
+  if(act === 'addcmp'){ addComparable(); return; }
+
+  if(act === 'nudge'){
+    const row = currentRow(); if(!row) return;
+    row.start = clamp(row.start + Number(el.dataset.v), 0, 1560);
+    row.end = row.start + getFilm(row.filmId).mins + PRE;
+    drawDrawer(row, state.plan.days[state.editing.dayIdx], state.plan.fc);
+    return;
+  }
+  if(act === 'savesess'){
+    const row = currentRow(); if(!row) return;
+    const day = state.plan.days[state.editing.dayIdx];
+    const block = getFilm(row.filmId).mins + PRE;
+    const clash = day.rows.some(r=> r.id!==row.id && r.screen===row.screen &&
+      !(row.start + block + TURN <= r.start || row.start >= r.end + TURN));
+    if(clash){ toast('Resolve the overlap first'); return; }
+    row.end = row.start + block;
+    row.cap = capOf(row.screen);
+    reseat(day.rows, state.plan.fc.film.id, day.admits);
+    sortDay(day.rows);
+    closeEdit(); render(); toast('Session updated'); return;
+  }
+  if(act === 'deletesess'){
+    const row = currentRow(); if(!row) return;
+    const day = state.plan.days[state.editing.dayIdx];
+    day.rows = day.rows.filter(r=>r.id!==row.id);
+    reseat(day.rows, state.plan.fc.film.id, day.admits);
+    closeEdit(); render(); toast('Session deleted'); return;
+  }
+  if(act === 'dupsess'){
+    const row = currentRow(); if(!row) return;
+    const day = state.plan.days[state.editing.dayIdx];
+    const block = getFilm(row.filmId).mins + PRE;
+    const copy = {...row, id:'r'+(ROWID++), start:row.start + block + TURN, end:row.start + block*2 + TURN};
+    day.rows.push(copy);
+    reseat(day.rows, state.plan.fc.film.id, day.admits);
+    sortDay(day.rows);
+    closeEdit(); render(); toast('Session duplicated'); return;
+  }
+  if(act === 'addsession'){
+    const day = state.plan.days[state.dayIdx];
+    const fc = state.plan.fc;
+    const block = fc.film.mins + PRE;
+    let target = null;
+    for(const s of fc.cinema.screens){
+      const taken = day.rows.filter(r=>r.screen===s.name).sort((a,b)=>a.start-b.start);
+      let cur = OPEN;
+      for(const r of taken){ if(r.start-cur >= block+TURN){ target={screen:s.name,start:cur}; break; } cur = Math.max(cur, r.end+TURN); }
+      if(!target && CLOSE-cur >= block) target={screen:s.name,start:cur};
+      if(target) break;
+    }
+    if(!target) return toast('No free slot on this day');
+    day.rows.push({id:'r'+(ROWID++), screen:target.screen, filmId:fc.film.id, start:target.start, end:target.start+block, status:'Planned', mine:true});
+    reseat(day.rows, fc.film.id, day.admits);
+    sortDay(day.rows);
+    render(); openEdit(day.rows[day.rows.length-1].id);
+    return;
+  }
+});
+
+function sortDay(rows){
+  const cinema = getCinema(state.cinema);
+  const order = {};
+  cinema.screens.map(s=>s.name).sort((a,b)=>a.localeCompare(b,'en',{sensitivity:'base'})).forEach((n,i)=>order[n]=i);
+  rows.sort((a,b)=> (order[a.screen]-order[b.screen]) || (a.start-b.start));
+}
+
+function generate(){
+  state.plan = buildPlan();
+  state.dayIdx = 0;
+  state.tab = 'schedule';
+  render();
+  const n = state.plan.days.reduce((a,d)=>a+d.rows.filter(r=>r.filmId===state.filmId).length,0);
+  toast(`Week built · ${n} sessions for ${getFilm(state.filmId).title}`);
+}
+
+/* ---------- modal ---------- */
+function openModal(){
+  const list = FILMS.map(f=>`
+    <button class="fopt ${f.id===state.filmId?'on':''}" data-act="pick" data-id="${f.id}">
+      <div class="p" style="background:linear-gradient(150deg,${f.c1},${f.c2})"></div>
+      <div class="t"><b>${esc(f.title)}</b><span>${f.genre} · ${f.mins}m · ${f.rating}</span></div>
+    </button>`).join('');
+  $('#modalbox').innerHTML = `
+    <div class="hd"><h3>Choose a film</h3><button class="x" data-act="closemodal">×</button></div>
+    <div class="bd"><div class="fgrid">${list}</div></div>`;
+  $('#modal').classList.add('on');
+}
+function closeModal(){ $('#modal').classList.remove('on'); }
+document.addEventListener('click', e=>{
+  if(e.target.closest('[data-act="closemodal"]')) closeModal();
+});
+
+function addComparable(){
+  const have = state.comps[state.filmId].map(c=>c.n);
+  const pool = FILMS.filter(f=>f.id!==state.filmId && !have.includes(f.title));
+  const pick = pool[0];
+  if(!pick){ toast('No more titles to add'); return; }
+  const a = anchorOf(pick.comps.map(c=>({...c})));
+  state.comps[state.filmId].push({n:pick.title, sim:55, aps:Math.round(a.aps), idx:Math.round(a.idx)});
+  render(); toast('Added ' + pick.title);
+}
+
+function toast(msg){
+  $('#toastmsg').textContent = msg;
+  $('#toast').classList.add('on');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=> $('#toast').classList.remove('on'), 2400);
+}
+
+
+/* 1B - drag a row onto another session to switch their time slots.
+   A short drag that misses the rows still nudges the start by 5-minute steps. */
+const PX_PER_MIN = 2;
+let sdrag = null;
+function bTip(text, x, y){
+  let t = document.getElementById('bdragtip');
+  if(text === null){ if(t) t.remove(); return; }
+  if(!t){ t = document.createElement('div'); t.id='bdragtip'; t.className='drag-tip'; document.body.appendChild(t); }
+  t.textContent = text; t.style.left=(x+14)+'px'; t.style.top=(y+18)+'px';
+}
+function bClear(){
+  Array.from(document.querySelectorAll('table.s tbody tr.drop-target')).forEach(t=>t.classList.remove('drop-target'));
+}
+function bTargetAt(y, skipId){
+  let best = null;
+  Array.from(document.querySelectorAll('table.s tbody tr[data-id]')).forEach(tr=>{
+    if(tr.dataset.id === skipId) return;
+    const r = tr.getBoundingClientRect(); if(r.height <= 0) return;
+    const dist = y < r.top ? r.top-y : y > r.bottom ? y-r.bottom : 0;
+    if(!best || dist < best.dist) best = {tr, dist};
+  });
+  return best && best.dist === 0 ? best.tr : null;
+}
+document.addEventListener('pointerdown', e=>{
+  if(state.tab!=='schedule' || !state.plan) return;
+  if(e.target.closest('button')) return;
+  const tr = e.target.closest('tbody tr[data-id]');
+  if(!tr) return;
+  const day = state.plan.days[state.dayIdx];
+  const row = day.rows.find(r=>r.id===tr.dataset.id);
+  if(!row) return;
+  e.preventDefault();
+  try{ tr.setPointerCapture(e.pointerId); }catch(_){}
+  sdrag = {tr, id:tr.dataset.id, startY:e.clientY, orig:row.start,
+    dur:row.end-row.start, pointerId:e.pointerId, moved:false, row, day, target:null};
+  tr.classList.add('drag-on');
+});
+document.addEventListener('pointermove', e=>{
+  if(!sdrag) return;
+  const d = sdrag, dy = e.clientY - d.startY;
+  if(Math.abs(dy)>3) d.moved = true;
+  d.tr.style.transform = `translateY(${dy}px)`;
+  const c3 = d.tr.querySelector('td:nth-child(3)');
+  const c4 = d.tr.querySelector('td:nth-child(4)');
+  bClear(); d.target = null;
+  const tTr = (d.moved && Math.abs(dy) > 8) ? bTargetAt(e.clientY, d.id) : null;
+  if(tTr){
+    const o = d.day.rows.find(r=>r.id===tTr.dataset.id);
+    if(o){
+      d.target = o;
+      tTr.classList.add('drop-target');
+      if(c3) c3.innerHTML = `<b>${hhmm(o.start)}</b>`;
+      if(c4) c4.textContent = hhmm(o.start + d.dur);
+      const of = getFilm(o.filmId);
+      bTip('↕ Switch with ' + (of?of.title:'session') + ' · ' + hhmm(o.start), e.clientX, e.clientY);
+      return;
+    }
+  }
+  const delta = Math.round(dy/PX_PER_MIN/5)*5;
+  d.proposed = Math.max(OPEN, Math.min(CLOSE - d.dur, d.orig + delta));
+  if(c3) c3.innerHTML = `<b>${hhmm(d.proposed)}</b>`;
+  if(c4) c4.textContent = hhmm(d.proposed + d.dur);
+  bTip('↕ Move to ' + hhmm(d.proposed), e.clientX, e.clientY);
+});
+function bEndDrag(){
+  if(!sdrag) return;
+  const d = sdrag; sdrag = null;
+  try{ d.tr.releasePointerCapture(d.pointerId); }catch(_){}
+  d.tr.classList.remove('drag-on'); d.tr.style.transform = '';
+  bClear(); bTip(null);
+  if(!d.moved) return;
+  window.__suppressUntil = performance.now() + 400;
+  if(d.target && d.target.id !== d.id){
+    const a=d.row, b=d.target, ad=a.end-a.start, bd=b.end-b.start, as=a.start;
+    a.start = clamp(b.start, OPEN, CLOSE-ad); a.end = a.start + ad;
+    b.start = clamp(as,     OPEN, CLOSE-bd); b.end = b.start + bd;
+    render(); const of = getFilm(b.filmId); toast('Switched with ' + (of?of.title:'session'));
+  } else if(d.proposed!==undefined && d.proposed!==d.orig){
+    d.row.start = d.proposed; d.row.end = d.proposed + d.dur;
+    render(); toast('Moved to ' + hhmm(d.proposed));
+  }
+}
+document.addEventListener('pointerup', bEndDrag);
+document.addEventListener('pointercancel', ()=>{
+  if(!sdrag) return;
+  const d = sdrag; sdrag = null;
+  try{ d.tr.releasePointerCapture(d.pointerId); }catch(_){}
+  d.tr.classList.remove('drag-on'); d.tr.style.transform = '';
+  bClear(); bTip(null);
+});
+
+/* ---------- boot ---------- */
+$('#cin').innerHTML = CINEMAS.map(c=>`<option>${c.name}</option>`).join('');
+$('#wk').innerHTML = WEEKS.map(w=>`<option value="${w.id}">${w.label}</option>`).join('');
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+[theme]
+base = "light"
+primaryColor = "#E4002B"
+backgroundColor = "#F5F2ED"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#14110E"
+
+[server]
+# headless stays on so the app behaves the same locally and on a host.
+# run.bat overrides it to false so a local run still opens a browser.
+headless = true
+enableStaticServing = true
+
+# Required behind the WorkBuddy reverse proxy: the proxy terminates TLS and
+# forwards to us on a different host/port, so the browser's Origin does not
+# match. XSRF and CORS checks would block the websocket and leave the page
+# stuck at "connecting".
+enableXsrfProtection = false
+enableCORS = false
+
+[browser]
+gatherUsageStats = false
