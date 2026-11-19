@@ -199,7 +199,11 @@ def login_gate() -> None:
             color:#1C1C1E !important;font-size:15px !important;min-height:28px !important;
             padding:0 !important}
           [data-testid="stSelectbox"] svg{color:#E4002B !important}
-          [data-testid="stFormSubmitButton"] button{width:100% !important;height:48px !important;
+          [data-testid="stFormSubmitButton"],
+          [data-testid="stFormSubmitButton"] > div{width:100% !important;display:block !important}
+          [data-testid="stFormSubmitButton"] button,
+          [data-testid="stBaseButton-primaryFormSubmit"]{width:100% !important;
+            box-sizing:border-box !important;display:block !important;height:48px !important;
             background:#E4002B !important;color:#fff !important;border-radius:14px !important;
             font-size:15px !important;font-weight:600 !important;border:none !important;
             box-shadow:0 8px 20px rgba(228,0,43,.28) !important;margin-top:14px !important}
