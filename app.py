@@ -441,6 +441,49 @@ def inject_shared(html: str, user: dict, titles: list[dict]) -> str:
     return html.replace("<head>", "<head>" + shim, 1)
 
 
+def fullscreen_embed(html: str, user: dict, titles: list[dict], height: int = 820) -> None:
+    """Render a prototype with a working in-app full-screen toggle."""
+    seeded = inject_shared(html, user, titles)
+    srcdoc = (
+        seeded.replace("&", "&amp;")
+        .replace('"', "&quot;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+    )
+    wrapper = f"""
+    <style>
+      html,body{{margin:0;padding:0;background:#F5F2ED}}
+      #fsWrap{{position:relative;background:#fff}}
+      #fsWrap:fullscreen{{width:100vw;height:100vh;overflow:auto}}
+      #fsWrap:fullscreen iframe{{height:calc(100vh - 38px)!important}}
+      .fsbar{{position:sticky;top:0;z-index:99;display:flex;justify-content:flex-end;
+        padding:6px 10px;background:#F5F2ED;border-bottom:1px solid #E2DED7}}
+      .fsbar button{{background:#E4002B;color:#fff;border:0;border-radius:8px;
+        padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer}}
+      iframe{{width:100%;height:{height}px;border:0;display:block}}
+    </style>
+    <div id="fsWrap">
+      <div class="fsbar">
+        <button id="fsBtn" onclick="toggleFull()">Full screen ⛶</button>
+      </div>
+      <iframe title="TGV prototype" srcdoc="{srcdoc}"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"></iframe>
+    </div>
+    <script>
+      function toggleFull(){{
+        var w=document.getElementById('fsWrap');
+        if(document.fullscreenElement){{document.exitFullscreen();}}
+        else if(w.requestFullscreen){{w.requestFullscreen();}}
+      }}
+      document.addEventListener('fullscreenchange',function(){{
+        var b=document.getElementById('fsBtn');
+        b.textContent=document.fullscreenElement?'Exit full screen ✕':'Full screen ⛶';
+      }});
+    </script>
+    """
+    components.html(wrapper, height=height + 44, scrolling=True)
+
+
 # --------------------------------------------------------------------------
 # page
 # --------------------------------------------------------------------------
@@ -619,10 +662,8 @@ with title_l:
     )
 with title_r:
     st.markdown(
-        f'<div style="text-align:right;padding-top:2px">'
-        f'<a href="{STATIC_URL}/{key}" target="_blank" '
-        f'style="font-size:12px;color:#E4002B;text-decoration:none;font-weight:600">'
-        f"Open full screen ↗</a></div>",
+        '<div style="text-align:right;padding-top:2px;font-size:11.5px;color:#6E675C">'
+        "Use <b>Full screen</b> on the view below ↗</div>",
         unsafe_allow_html=True,
     )
 
@@ -637,7 +678,7 @@ elif key == "5-createfilm.html":
         unsafe_allow_html=True,
     )
     film_html = (VIEWS / key).read_text(encoding="utf-8")
-    components.html(inject_shared(film_html, user, titles), height=960, scrolling=True)
+    fullscreen_embed(film_html, user, titles, height=960)
 
     st.markdown("### Streamlit form fallback · shared with everyone")
     create_film_panel(user, titles)
@@ -661,11 +702,11 @@ elif key == "5-createfilm.html":
             )
 else:
     html = (VIEWS / key).read_text(encoding="utf-8")
-    components.html(inject_shared(html, user, titles), height=820, scrolling=True)
+    fullscreen_embed(html, user, titles, height=820)
 
 st.caption(
-    "The full-screen view is the standalone prototype. Inside this review it is seeded with "
-    "your sign-in and the shared titles published by Admin or Creator."
+    "Use the Full screen button on the embedded view. It is seeded with your sign-in and "
+    "the shared titles published by Admin or Creator."
 )
 
 st.divider()
