@@ -39,6 +39,15 @@ EXPS = [
 ]
 EXP_LABELS = [f"{e['name']} [{e['code']}]" for e in EXPS]
 
+ROLE_CHOICES = [
+    "Admin · all modules",
+    "Creator · create titles",
+    "Programmer · rate & schedule",
+    "Viewer · read only",
+]
+ROLE_NAME = {choice: choice.split(" · ")[0] for choice in ROLE_CHOICES}
+ADMIN_CODE_DEFAULT = "TGV-ALL"
+
 CONCEPTS = [
     {
         "file": "5-createfilm.html",
@@ -46,12 +55,12 @@ CONCEPTS = [
         "tone": "Light",
         "tag": "Title request · experiences · Vista codes",
         "blurb": (
-            "Sign in first. Only the Creator raises the title request: name the film, tick the "
+            "Sign in first. Admin or Creator raises the title request: name the film, tick the "
             "experiences, and publish one Vista title per experience. Everyone else signs in and "
             "uses those titles — no second title request."
         ),
         "look": [
-            "Does the role gate make sense — Creator publishes, others reuse?",
+            "Does the role gate make sense — Admin/Creator publishes, others reuse?",
             "Does [IMAX2D] DOOMSDAY / [BEANIE] DOOMSDAY read like Vista?",
             "Is the shared slate obvious enough on the later concepts?",
         ],
@@ -228,8 +237,8 @@ def login_gate() -> None:
           <div class="lg-hero">
             <span class="bd"><i></i>TGV CINEMAS</span>
             <h1>Sign in.</h1>
-            <p>One Creator raises the Vista titles. Everyone else works from the same slate —
-               no duplicate requests.</p>
+            <p>Admin opens every module. Creator raises the Vista titles. Everyone else
+               works from the same slate.</p>
           </div>
         </div>
         """,
@@ -238,13 +247,15 @@ def login_gate() -> None:
 
     with st.form("tgv_login", clear_on_submit=False):
         email = st.text_input("Work email", value="creator@tgv.com.my")
-        password = st.text_input("Password", type="password")
-        role = st.selectbox("Role", ["Creator", "Programmer", "Viewer"])
+        role_choice = st.selectbox("Access", ROLE_CHOICES)
+        role = ROLE_NAME[role_choice]
+        password_label = "Admin access code" if role == "Admin" else "Password"
+        password = st.text_input(password_label, type="password")
         go = st.form_submit_button("Sign in →", type="primary")
 
     st.markdown(
-        '<div class="lg-foot"><b>Creator</b> publishes · <b>Programmer</b> rates &amp; '
-        "schedules · <b>Viewer</b> reads the plan</div>",
+        '<div class="lg-foot"><b>Admin</b> everything · <b>Creator</b> publishes · '
+        "<b>Programmer</b> rates &amp; schedules · <b>Viewer</b> reads</div>",
         unsafe_allow_html=True,
     )
 
@@ -252,10 +263,16 @@ def login_gate() -> None:
         extra = st.secrets.get("APP_PASSWORD")
     except Exception:
         extra = None
+    try:
+        admin_code = st.secrets.get("ADMIN_CODE", ADMIN_CODE_DEFAULT)
+    except Exception:
+        admin_code = ADMIN_CODE_DEFAULT
 
     if go:
         if not re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", email.strip()):
             st.error("Enter a valid TGV staff email address.")
+        elif role == "Admin" and password != admin_code:
+            st.error("Wrong admin access code.")
         elif len(password) < 4:
             st.error("Password must be at least 4 characters.")
         elif extra and password != extra:
@@ -316,13 +333,13 @@ def save_feedback(row: dict) -> None:
 
 
 # --------------------------------------------------------------------------
-# create film — only the Creator can publish to the shared slate
+# create film — Admin or Creator can publish to the shared slate
 # --------------------------------------------------------------------------
 def create_film_panel(user: dict, titles: list[dict]) -> None:
-    if user["role"] != "Creator":
+    if user["role"] not in ("Admin", "Creator"):
         st.info(
-            f"Signed in as {user['role']}. Title requests are raised once by the Creator; "
-            "you can use the shared titles below without creating anything."
+            f"Signed in as {user['role']}. Title requests are raised once by Admin or "
+            "Creator; you can use the shared titles below without creating anything."
         )
         return
 
@@ -465,6 +482,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+role_label = "Admin · full access" if user["role"] == "Admin" else user["role"]
+
 head_l, head_r = st.columns([5, 1])
 with head_l:
     st.markdown(
@@ -477,7 +496,7 @@ with head_l:
 with head_r:
     st.markdown(
         f'<div style="text-align:right;font-size:11.5px;color:#6E675C;padding-top:5px">'
-        f"Signed in as <b style='color:#14110E'>{user['name']}</b><br/>{user['role']}</div>",
+        f"Signed in as <b style='color:#14110E'>{user['name']}</b><br/>{role_label}</div>",
         unsafe_allow_html=True,
     )
     if st.button("Sign out", key="signout"):
