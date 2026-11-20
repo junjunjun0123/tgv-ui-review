@@ -82,6 +82,22 @@ CONCEPTS = [
         ],
     },
     {
+        "file": "1-ai-console.html",
+        "name": "Design 2 · dark showtime manager",
+        "tone": "Session design",
+        "tag": "Dark · posters · INDEX · approval",
+        "blurb": (
+            "A dark, poster-first manager: score films with a weighted INDEX, read consensus "
+            "across programmers, then approve the showtime plan. It uses the same shared "
+            "Vista titles as every other design."
+        ),
+        "look": [
+            "Does the dark poster-first layout scan faster?",
+            "Is consensus INDEX easier to trust than a single score?",
+            "Does approval still feel properly gated?",
+        ],
+    },
+    {
         "file": "4-week.html",
         "name": "Design 3 · week planner",
         "tone": "Session design",
@@ -470,7 +486,7 @@ with head_l:
     st.markdown(
         '<div class="tgv-hd"><span class="mk">TGV</span>'
         "<h1>Film programming — UI review</h1></div>"
-        '<div class="tgv-sub">Login and Create Film are shared. Then compare <b>two designs</b> '
+        '<div class="tgv-sub">Login and Create Film are shared. Then compare <b>three designs</b> '
         "for planning the session. Notes land in <code>feedback.csv</code> next to this app.</div>",
         unsafe_allow_html=True,
     )
@@ -486,9 +502,9 @@ with head_r:
 
 render_slate(titles)
 
-st.markdown("### Two designs for planning the session")
+st.markdown("### Three designs for planning the session")
 st.caption("Login and Create Film are shared. Open a design to see the full prototype.")
-_d1, _d2 = st.columns(2)
+_d1, _d2, _d3 = st.columns(3)
 with _d1:
     st.markdown(
         '<div class="tgv-card" style="border-left:4px solid #E4002B">'
@@ -502,6 +518,17 @@ with _d1:
         st.rerun()
 with _d2:
     st.markdown(
+        '<div class="tgv-card" style="border-left:4px solid #7C4DBE">'
+        "<b>Design 2 · dark showtime manager</b><br/>"
+        "Poster-first dark view with consensus INDEX, team scores and approval."
+        "</div>",
+        unsafe_allow_html=True,
+    )
+    if st.button("Open Design 2 →", key="open_design_2"):
+        st.session_state["step_pick"] = CONCEPTS[1]["name"]
+        st.rerun()
+with _d3:
+    st.markdown(
         '<div class="tgv-card" style="border-left:4px solid #1F5FA8">'
         "<b>Design 3 · week planner</b><br/>"
         "Whole-week slate, attributed team ratings, 24-hour placement and exports."
@@ -509,7 +536,7 @@ with _d2:
         unsafe_allow_html=True,
     )
     if st.button("Open Design 3 →", key="open_design_3"):
-        st.session_state["step_pick"] = CONCEPTS[1]["name"]
+        st.session_state["step_pick"] = CONCEPTS[2]["name"]
         st.rerun()
 
 # --------------------------------------------------------------------------
@@ -518,7 +545,7 @@ with _d2:
 with st.sidebar:
     st.markdown("### Shared setup")
     st.caption("Sign in first. Create Film stays the same for every user.")
-    st.markdown("### Plan the session — two designs")
+    st.markdown("### Plan the session — three designs")
     step_name = st.radio(
         "Review step",
         STEP_OPTIONS,
@@ -529,7 +556,7 @@ with st.sidebar:
     meta = STEP_BY_NAME[step_name]
     st.caption(meta["blurb"])
     if step_name == CREATE_FILM_META["name"]:
-        st.caption("Shared step · not counted as one of the two designs.")
+        st.caption("Shared step · not counted as one of the three designs.")
 
     with st.expander("What to look at", expanded=True):
         for q in meta["look"]:
@@ -676,11 +703,12 @@ with right:
         "<li>Create Film is the same starting point for everyone.</li>"
         "<li>Admin or Creator publishes the Vista titles once.</li>"
         "</ul>"
-        "<h4 style='margin-top:12px'>Two designs for planning the session</h4>"
+        "<h4 style='margin-top:12px'>Three designs for planning the session</h4>"
         "<ul>"
         "<li><b>Design 1B</b> — one-screen 24h console, 5-star score, drag/swap.</li>"
+        "<li><b>Design 2</b> — dark poster-first manager, INDEX consensus, approval.</li>"
         "<li><b>Design 3</b> — whole-week slate, team ratings, 24h placement.</li>"
-        "<li>Both use the same created titles and the same sign-in.</li>"
+        "<li>All three use the same created titles and the same sign-in.</li>"
         "<li>Every session stays editable after it is planned.</li>"
         "</ul></div>",
         unsafe_allow_html=True,
