@@ -46,7 +46,7 @@ ROLE_CHOICES = [
     "Viewer · read only",
 ]
 ROLE_NAME = {choice: choice.split(" · ")[0] for choice in ROLE_CHOICES}
-ADMIN_CODE_DEFAULT = "TGV-ALL"
+ADMIN_CODE_DEFAULT = ""
 
 CREATE_FILM_META = {
     "file": "5-createfilm.html",
@@ -225,13 +225,14 @@ def login_gate() -> None:
         email = st.text_input("Work email", value="creator@tgv.com.my")
         role_choice = st.selectbox("Access", ROLE_CHOICES)
         role = ROLE_NAME[role_choice]
-        password_label = "Admin access code" if role == "Admin" else "Password"
+        password_label = "Password / admin code" if role == "Admin" else "Password"
         password = st.text_input(password_label, type="password")
         go = st.form_submit_button("Sign in →", type="primary")
 
     st.markdown(
         '<div class="lg-foot"><b>Admin</b> everything · <b>Creator</b> publishes · '
-        "<b>Programmer</b> rates &amp; schedules · <b>Viewer</b> reads</div>",
+        "<b>Programmer</b> rates &amp; schedules · <b>Viewer</b> reads<br/>"
+        "Admin prototype sign-in: any 4+ character password.</div>",
         unsafe_allow_html=True,
     )
 
@@ -247,11 +248,15 @@ def login_gate() -> None:
     if go:
         if not re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", email.strip()):
             st.error("Enter a valid TGV staff email address.")
-        elif role == "Admin" and password != admin_code:
+        elif (
+            role == "Admin"
+            and admin_code
+            and password.strip().lower() != str(admin_code).strip().lower()
+        ):
             st.error("Wrong admin access code.")
-        elif len(password) < 4:
+        elif len(password.strip()) < 4:
             st.error("Password must be at least 4 characters.")
-        elif extra and password != extra:
+        elif extra and role != "Admin" and password != extra:
             st.error("Wrong password.")
         else:
             name = (
