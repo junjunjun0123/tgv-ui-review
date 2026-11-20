@@ -12,6 +12,7 @@ Run:
 
 from __future__ import annotations
 
+import base64
 import csv
 import json
 import re
@@ -442,8 +443,9 @@ def inject_shared(html: str, user: dict, titles: list[dict]) -> str:
 
 
 def fullscreen_embed(html: str, user: dict, titles: list[dict], height: int = 820) -> None:
-    """Render a prototype with a working in-app full-screen toggle."""
+    """Render a prototype with separate-tab and in-place full-screen options."""
     seeded = inject_shared(html, user, titles)
+    b64 = base64.b64encode(seeded.encode("utf-8")).decode("ascii")
     srcdoc = (
         seeded.replace("&", "&amp;")
         .replace('"', "&quot;")
@@ -456,20 +458,35 @@ def fullscreen_embed(html: str, user: dict, titles: list[dict], height: int = 82
       #fsWrap{{position:relative;background:#fff}}
       #fsWrap:fullscreen{{width:100vw;height:100vh;overflow:auto}}
       #fsWrap:fullscreen iframe{{height:calc(100vh - 38px)!important}}
-      .fsbar{{position:sticky;top:0;z-index:99;display:flex;justify-content:flex-end;
+      .fsbar{{position:sticky;top:0;z-index:99;display:flex;justify-content:flex-end;gap:8px;
         padding:6px 10px;background:#F5F2ED;border-bottom:1px solid #E2DED7}}
-      .fsbar button{{background:#E4002B;color:#fff;border:0;border-radius:8px;
+      .fsbar button{{background:#E4002B;color:#fff;border:1px solid #E4002B;border-radius:8px;
         padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer}}
+      .fsbar button.secondary{{background:#fff;color:#E4002B}}
       iframe{{width:100%;height:{height}px;border:0;display:block}}
     </style>
+    <script type="text/plain" id="protoB64">{b64}</script>
     <div id="fsWrap">
       <div class="fsbar">
-        <button id="fsBtn" onclick="toggleFull()">Full screen ⛶</button>
+        <button id="tabBtn" onclick="openTab()">Open new tab ↗</button>
+        <button id="fsBtn" class="secondary" onclick="toggleFull()">Full screen ⛶</button>
       </div>
       <iframe title="TGV prototype" srcdoc="{srcdoc}"
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"></iframe>
     </div>
     <script>
+      function makeUrl(){{
+        var bin=atob(document.getElementById('protoB64').textContent.trim());
+        var bytes=new Uint8Array(bin.length);
+        for(var i=0;i<bin.length;i++){{bytes[i]=bin.charCodeAt(i);}}
+        return URL.createObjectURL(new Blob([bytes],{{type:'text/html;charset=utf-8'}}));
+      }}
+      function openTab(){{
+        var url=makeUrl();
+        var w=window.open(url,'_blank');
+        if(!w){{alert('Popup blocked. Allow popups for this site, then try again.');return;}}
+        setTimeout(function(){{URL.revokeObjectURL(url);}},120000);
+      }}
       function toggleFull(){{
         var w=document.getElementById('fsWrap');
         if(document.fullscreenElement){{document.exitFullscreen();}}
@@ -663,7 +680,7 @@ with title_l:
 with title_r:
     st.markdown(
         '<div style="text-align:right;padding-top:2px;font-size:11.5px;color:#6E675C">'
-        "Use <b>Full screen</b> on the view below ↗</div>",
+        "Use <b>Open new tab</b> for a separate page, or <b>Full screen</b> to expand here ↗</div>",
         unsafe_allow_html=True,
     )
 
@@ -705,8 +722,8 @@ else:
     fullscreen_embed(html, user, titles, height=820)
 
 st.caption(
-    "Use the Full screen button on the embedded view. It is seeded with your sign-in and "
-    "the shared titles published by Admin or Creator."
+    "Use Open new tab for a separate full browser page, or Full screen to expand here. "
+    "Both are seeded with your sign-in and the shared titles published by Admin or Creator."
 )
 
 st.divider()
