@@ -197,8 +197,9 @@ button{cursor:pointer;border:0;background:none}
     <section class="panel guest hidden" id="guestPanel">
       <div class="eyebrow">Shared slate · read only for you</div>
       <h2 id="guestTitle">You can use the titles, not create them.</h2>
-      <p id="guestCopy">A film title request is raised once by the Creator. Programmers and viewers sign in and work from the same Vista titles — so everyone rates and schedules the same version of the film.</p>
+      <p id="guestCopy">A film title request is raised once by Admin or Creator. Programmers and viewers sign in and work from the same Vista titles — so everyone rates and schedules the same version of the film.</p>
       <ul>
+        <li><b>Admin</b> opens every module and can publish titles.</li>
         <li><b>Creator</b> publishes new titles for the slate.</li>
         <li><b>Programmer</b> rates the created titles and builds the schedule.</li>
         <li><b>Viewer</b> reads the ratings and the plan.</li>
@@ -207,7 +208,7 @@ button{cursor:pointer;border:0;background:none}
       <div class="glogin" id="glogin">
         <input id="gemail" type="email" value="creator@tgv.com.my" placeholder="you@tgv.com.my"/>
         <input id="gpass" type="password" value="demo1234" placeholder="password"/>
-        <select id="grole"><option value="Creator">Creator</option><option value="Programmer">Programmer</option><option value="Viewer">Viewer</option></select>
+        <select id="grole"><option value="Admin">Admin — all modules</option><option value="Creator">Creator</option><option value="Programmer">Programmer</option><option value="Viewer">Viewer</option></select>
         <button class="btn red mini" id="gsign">Sign in</button>
       </div>
     </section>
@@ -249,7 +250,7 @@ const vista = (code,name) => '[' + code + '] ' + String(name).trim().toUpperCase
 const state = { picked:['imax2d','beanie'], titles:[], user:null };
 try{ state.user = JSON.parse(localStorage.getItem('tgv.user') || 'null'); }catch(e){}
 
-function isCreator(){ return !!(state.user && state.user.role === 'Creator'); }
+function isCreator(){ return !!(state.user && (state.user.role === 'Creator' || state.user.role === 'Admin')); }
 
 function applyRole(){
   const creator = isCreator();
@@ -378,7 +379,7 @@ function syncButton(){
 
 function create(){
   if(!isCreator()){
-    toast('Only the Creator can publish a new film title'); return;
+    toast('Only Creator or Admin can publish a new film title'); return;
   }
   const d = details();
   if(!d.name){ toast('Enter a film name first'); $('#fname').focus(); return; }
@@ -402,12 +403,12 @@ function create(){
              : 'Those titles already exist');
 }
 function remove(id){
-  if(!isCreator()){ toast('Only the Creator can remove a title'); return; }
+  if(!isCreator()){ toast('Only Creator or Admin can remove a title'); return; }
   state.titles = state.titles.filter(t=>t.id!==id);
   save(); renderAll(); toast('Title removed');
 }
 function send(id){
-  if(!isCreator()){ toast('Only the Creator can send a title to rating'); return; }
+  if(!isCreator()){ toast('Only Creator or Admin can send a title to rating'); return; }
   const t = state.titles.find(x=>x.id===id);
   if(!t) return;
   t.status = 'sent';
@@ -435,7 +436,7 @@ document.addEventListener('click', e=>{
     renderExps(); renderAll(); toast('Loaded the Doomsday example'); return;
   }
   if(t.closest('#clearAll')){
-    if(!isCreator()){ toast('Only the Creator can clear titles'); return; }
+    if(!isCreator()){ toast('Only Creator or Admin can clear titles'); return; }
     state.titles = []; save(); renderAll(); toast('Created titles cleared'); return;
   }
   if(t.closest('#gsign')){
