@@ -502,6 +502,22 @@ with head_r:
 
 render_slate(titles)
 
+st.markdown("### Shared setup")
+_cf_text, _cf_btn = st.columns([4, 1])
+with _cf_text:
+    st.markdown(
+        '<div class="tgv-card" style="border-left:4px solid #E4002B">'
+        "<b>Create Film · shared</b><br/>"
+        "Sign in first. Admin or Creator publishes the Vista titles once; everyone else "
+        "reuses the same slate in all three designs. Designed prototype + native form."
+        "</div>",
+        unsafe_allow_html=True,
+    )
+with _cf_btn:
+    if st.button("Open Create Film →", key="open_create_film"):
+        st.session_state["step_pick"] = CREATE_FILM_META["name"]
+        st.rerun()
+
 st.markdown("### Three designs for planning the session")
 st.caption("Login and Create Film are shared. Open a design to see the full prototype.")
 _d1, _d2, _d3 = st.columns(3)
