@@ -48,85 +48,61 @@ ROLE_CHOICES = [
 ROLE_NAME = {choice: choice.split(" · ")[0] for choice in ROLE_CHOICES}
 ADMIN_CODE_DEFAULT = "TGV-ALL"
 
+CREATE_FILM_META = {
+    "file": "5-createfilm.html",
+    "name": "Create Film · shared",
+    "tone": "Shared setup",
+    "tag": "Title request · experiences · Vista codes",
+    "blurb": (
+        "Same for every user: sign in first, then Admin or Creator raises the title request. "
+        "Everyone else reuses those Vista titles — no second title setup before planning."
+    ),
+    "look": [
+        "Does the shared setup feel like one clear starting point?",
+        "Does [IMAX2D] DOOMSDAY / [BEANIE] DOOMSDAY read like Vista?",
+        "Is it obvious that the titles carry into both designs?",
+    ],
+}
+
 CONCEPTS = [
     {
-        "file": "5-createfilm.html",
-        "name": "Create Film",
-        "tone": "Light",
-        "tag": "Title request · experiences · Vista codes",
-        "blurb": (
-            "Sign in first. Admin or Creator raises the title request: name the film, tick the "
-            "experiences, and publish one Vista title per experience. Everyone else signs in and "
-            "uses those titles — no second title request."
-        ),
-        "look": [
-            "Does the role gate make sense — Admin/Creator publishes, others reuse?",
-            "Does [IMAX2D] DOOMSDAY / [BEANIE] DOOMSDAY read like Vista?",
-            "Is the shared slate obvious enough on the later concepts?",
-        ],
-    },
-    {
-        "file": "1-ai-console.html",
-        "name": "Showtime Manager",
-        "tone": "Dark",
-        "tag": "Posters · overall ratings · INDEX · approval",
-        "blurb": (
-            "Film rating first, then the location-first showtime manager, then approval. The "
-            "published Vista titles are already in the slate for every signed-in user."
-        ),
-        "look": [
-            "Does the shared title appear in the picker without any setup?",
-            "Is the consensus rating easy to find?",
-            "Does approval still feel gated enough?",
-        ],
-    },
-    {
-        "file": "2-programmer.html",
-        "name": "Programmer",
-        "tone": "Light",
-        "tag": "Closest to Screen Schedule",
-        "blurb": (
-            "Pick a film, read the dossier, score it, see the forecast, get the schedule. "
-            "The light editorial skin mimics the Screen Schedule grid you already use."
-        ),
-        "look": [
-            "Does the dossier give you enough before you score?",
-            "Is the schedule grid faithful to the real one?",
-            "Can you find the creator's title quickly?",
-        ],
-    },
-    {
         "file": "3-simple.html",
-        "name": "AI Console, simplified",
-        "tone": "Light",
-        "tag": "5-star score · 24h · switch sessions",
+        "name": "Design 1B · 24h session console",
+        "tone": "Session design",
+        "tag": "5-star score · rules · drag/swap",
         "blurb": (
-            "Your score and comparables on the left, your own rules in the middle, an editable "
-            "schedule on the right. Five-star scoring and a full 24-hour day."
+            "One screen for one session: your 0–5 star score on the left, your own planning rules "
+            "in the middle, and a full 24-hour editable schedule on the right. Drag a session "
+            "onto another to swap time slots."
         ),
         "look": [
-            "Is the five-star rating clearer than the INDEX?",
-            "Does swapping sessions by drag / arrow feel safe?",
-            "Is 24 hours too wide for a normal planning view?",
+            "Is the single star score clearer than a long INDEX form?",
+            "Does dragging or using ▲▼ feel safe for swapping sessions?",
+            "Is a full 24-hour day useful, or too wide?",
         ],
     },
     {
         "file": "4-week.html",
-        "name": "Week Planner",
-        "tone": "Light",
-        "tag": "Vista titles · team ratings · 5-star · 24h",
+        "name": "Design 3 · week planner",
+        "tone": "Session design",
+        "tag": "Whole week · team ratings · 5-star · 24h",
         "blurb": (
-            "Whole-week slate, team ratings, drag-to-swap schedule and exports. The shell sign-in "
-            "is inherited here, so you do not log in twice inside the review."
+            "Build the whole-week slate from the same shared Vista titles, collect attributed "
+            "team ratings, then place the week into a 24-hour cinema schedule and export it. "
+            "The shell sign-in is inherited, so there is no second login."
         ),
         "look": [
-            "Do all four programmers' scores read clearly?",
-            "Is the week board readable at a glance?",
-            "Any duplicate sign-in or title setup still visible?",
+            "Do the four programmers' attributed scores read clearly?",
+            "Is the week board understandable at a glance?",
+            "Does the 24-hour placement still feel editable?",
         ],
     },
 ]
 CONCEPT_BY_FILE = {c["file"]: c for c in CONCEPTS}
+STEP_BY_NAME = {CREATE_FILM_META["name"]: CREATE_FILM_META}
+STEP_BY_NAME.update({c["name"]: c for c in CONCEPTS})
+FILE_BY_NAME = {name: meta["file"] for name, meta in STEP_BY_NAME.items()}
+STEP_OPTIONS = list(STEP_BY_NAME.keys())
 
 RATINGS = {
     1: "1 — Not usable",
@@ -489,8 +465,8 @@ with head_l:
     st.markdown(
         '<div class="tgv-hd"><span class="mk">TGV</span>'
         "<h1>Film programming — UI review</h1></div>"
-        '<div class="tgv-sub">Sign in once, publish the titles once, then review the same '
-        "job five ways. Notes land in <code>feedback.csv</code> next to this app.</div>",
+        '<div class="tgv-sub">Login and Create Film are shared. Then compare <b>two designs</b> '
+        "for planning the session. Notes land in <code>feedback.csv</code> next to this app.</div>",
         unsafe_allow_html=True,
     )
 with head_r:
@@ -505,19 +481,50 @@ with head_r:
 
 render_slate(titles)
 
+st.markdown("### Two designs for planning the session")
+st.caption("Login and Create Film are shared. Open a design to see the full prototype.")
+_d1, _d2 = st.columns(2)
+with _d1:
+    st.markdown(
+        '<div class="tgv-card" style="border-left:4px solid #E4002B">'
+        "<b>Design 1B · 24h session console</b><br/>"
+        "One screen: 5-star score, your rules, and a 24-hour schedule you can drag to swap."
+        "</div>",
+        unsafe_allow_html=True,
+    )
+    if st.button("Open Design 1B →", key="open_design_1b"):
+        st.session_state["step_pick"] = CONCEPTS[0]["name"]
+        st.rerun()
+with _d2:
+    st.markdown(
+        '<div class="tgv-card" style="border-left:4px solid #1F5FA8">'
+        "<b>Design 3 · week planner</b><br/>"
+        "Whole-week slate, attributed team ratings, 24-hour placement and exports."
+        "</div>",
+        unsafe_allow_html=True,
+    )
+    if st.button("Open Design 3 →", key="open_design_3"):
+        st.session_state["step_pick"] = CONCEPTS[1]["name"]
+        st.rerun()
+
 # --------------------------------------------------------------------------
 # sidebar
 # --------------------------------------------------------------------------
 with st.sidebar:
-    st.markdown("### Concepts")
-    key = st.radio(
-        "Pick a concept",
-        [c["file"] for c in CONCEPTS],
-        format_func=lambda f: CONCEPT_BY_FILE[f]["name"],
+    st.markdown("### Shared setup")
+    st.caption("Sign in first. Create Film stays the same for every user.")
+    st.markdown("### Plan the session — two designs")
+    step_name = st.radio(
+        "Review step",
+        STEP_OPTIONS,
+        key="step_pick",
         label_visibility="collapsed",
     )
-    meta = CONCEPT_BY_FILE[key]
+    key = FILE_BY_NAME[step_name]
+    meta = STEP_BY_NAME[step_name]
     st.caption(meta["blurb"])
+    if step_name == CREATE_FILM_META["name"]:
+        st.caption("Shared step · not counted as one of the two designs.")
 
     with st.expander("What to look at", expanded=True):
         for q in meta["look"]:
@@ -588,8 +595,9 @@ elif key == "5-createfilm.html":
     create_film_panel(user, titles)
     if not titles:
         st.markdown(
-            '<div class="tgv-card">No titles published yet. As Creator, fill the form above '
-            "and publish the first Vista titles. Everyone else will see them immediately.</div>",
+            '<div class="tgv-card">No titles published yet. As Admin or Creator, fill the form '
+            "above and publish the first Vista titles. Everyone else will see them immediately "
+            "in both designs.</div>",
             unsafe_allow_html=True,
         )
     else:
@@ -609,7 +617,7 @@ else:
 
 st.caption(
     "The full-screen view is the standalone prototype. Inside this review it is seeded with "
-    "your sign-in and the shared titles published by the Creator."
+    "your sign-in and the shared titles published by Admin or Creator."
 )
 
 st.divider()
@@ -619,7 +627,7 @@ st.divider()
 # --------------------------------------------------------------------------
 left, right = st.columns([3, 2])
 with left:
-    st.markdown("#### Leave a note on this concept")
+    st.markdown("#### Leave a note on this step")
     with st.form("review", clear_on_submit=True):
         c1, c2 = st.columns([1, 1])
         with c1:
@@ -650,27 +658,25 @@ with left:
             "works": works.strip().replace("\n", " "),
             "missing": missing.strip().replace("\n", " "),
         })
-        st.success("Saved. Switch concept and keep going.")
+        st.success("Saved. Switch step or design and keep going.")
         st.rerun()
 
 with right:
-    st.markdown("#### How the concepts differ")
+    st.markdown("#### What users are comparing")
     st.markdown(
         '<div class="tgv-card">'
-        "<h4>Decision each one automates</h4>"
+        "<h4>Shared first</h4>"
         "<ul>"
-        "<li><b>Create Film</b> — one creator publishes the Vista titles.</li>"
-        "<li><b>Showtime Manager</b> — the model proposes the whole week.</li>"
-        "<li><b>Programmer</b> — the model proposes, the grid stays familiar.</li>"
-        "<li><b>AI Console, simplified</b> — you set the rules, the model fills gaps.</li>"
-        "<li><b>Week Planner</b> — whole-week slate and team ratings.</li>"
+        "<li>Login happens before anything else.</li>"
+        "<li>Create Film is the same starting point for everyone.</li>"
+        "<li>Admin or Creator publishes the Vista titles once.</li>"
         "</ul>"
-        "<h4 style='margin-top:12px'>Shared across all concepts</h4>"
+        "<h4 style='margin-top:12px'>Two designs for planning the session</h4>"
         "<ul>"
-        "<li>Sign in once; role decides who may create titles.</li>"
-        "<li>Created titles appear in every slate automatically.</li>"
-        "<li>Score the film yourself — INDEX or five-star, depending on concept.</li>"
-        "<li>Every session editable after it is planned.</li>"
+        "<li><b>Design 1B</b> — one-screen 24h console, 5-star score, drag/swap.</li>"
+        "<li><b>Design 3</b> — whole-week slate, team ratings, 24h placement.</li>"
+        "<li>Both use the same created titles and the same sign-in.</li>"
+        "<li>Every session stays editable after it is planned.</li>"
         "</ul></div>",
         unsafe_allow_html=True,
     )
@@ -686,7 +692,7 @@ if rows:
         column_config={
             "when": st.column_config.TextColumn("When", width="small"),
             "reviewer": st.column_config.TextColumn("Who", width="small"),
-            "view": st.column_config.TextColumn("Concept", width="medium"),
+            "view": st.column_config.TextColumn("Step / design", width="medium"),
             "rating": st.column_config.NumberColumn("Rating", width="small"),
             "verdict": st.column_config.TextColumn("Next week?", width="small"),
             "works": st.column_config.TextColumn("Works", width="large"),
