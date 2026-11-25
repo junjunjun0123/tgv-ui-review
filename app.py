@@ -65,6 +65,24 @@ CREATE_FILM_META = {
     ],
 }
 
+SCREEN_COUNT_META = {
+    "file": "6-screencount.html",
+    "name": "Screen count · shared",
+    "tone": "Shared setup",
+    "tag": "Film × cinema · print count · variance",
+    "blurb": (
+        "Decide how many halls each title gets, before deciding which hall or what time. "
+        "A film × cinema grid like MASTER PROGRAMMING 2026: AI proposes 1, 2 or FLEXI per "
+        "cinema, PRINT COUNT totals the demand, VARIANCE shows the halls left over."
+    ),
+    "look": [
+        "Does film × cinema read like the Excel planner users already know?",
+        "Is 1 / 2 / FLEXI enough, or do planners need more than two halls?",
+        "Does the red VARIANCE warning make an over-subscribed cinema obvious?",
+        "Is the hand-off to session timing clear, with no hall assigned yet?",
+    ],
+}
+
 CONCEPTS = [
     {
         "file": "3-simple.html",
@@ -116,7 +134,10 @@ CONCEPTS = [
     },
 ]
 CONCEPT_BY_FILE = {c["file"]: c for c in CONCEPTS}
-STEP_BY_NAME = {CREATE_FILM_META["name"]: CREATE_FILM_META}
+STEP_BY_NAME = {
+    CREATE_FILM_META["name"]: CREATE_FILM_META,
+    SCREEN_COUNT_META["name"]: SCREEN_COUNT_META,
+}
 STEP_BY_NAME.update({c["name"]: c for c in CONCEPTS})
 FILE_BY_NAME = {name: meta["file"] for name, meta in STEP_BY_NAME.items()}
 STEP_OPTIONS = list(STEP_BY_NAME.keys())
@@ -546,8 +567,9 @@ with head_l:
     st.markdown(
         '<div class="tgv-hd"><span class="mk">TGV</span>'
         "<h1>Film programming — UI review</h1></div>"
-        '<div class="tgv-sub">Login and Create Film are shared. Then compare <b>three designs</b> '
-        "for planning the session. Notes land in <code>feedback.csv</code> next to this app.</div>",
+        '<div class="tgv-sub">Login, Create Film and Screen count are shared. Then compare '
+        "<b>three designs</b> for planning the session. Notes land in <code>feedback.csv</code> "
+        "next to this app.</div>",
         unsafe_allow_html=True,
     )
 with head_r:
@@ -576,6 +598,22 @@ with _cf_text:
 with _cf_btn:
     if st.button("Open Create Film →", key="open_create_film"):
         st.session_state["step_pick"] = CREATE_FILM_META["name"]
+        st.rerun()
+
+_sc_text, _sc_btn = st.columns([4, 1])
+with _sc_text:
+    st.markdown(
+        '<div class="tgv-card" style="border-left:4px solid #1F5FA8">'
+        "<b>Screen count · shared</b><br/>"
+        "Decide how many halls each title gets first, like the Excel: film × cinema, "
+        "AI proposes 1 / 2 / FLEXI, PRINT COUNT and VARIANCE show the load. No hall "
+        "number or session time is assigned yet."
+        "</div>",
+        unsafe_allow_html=True,
+    )
+with _sc_btn:
+    if st.button("Open Screen count →", key="open_screen_count"):
+        st.session_state["step_pick"] = SCREEN_COUNT_META["name"]
         st.rerun()
 
 st.markdown("### Three designs for planning the session")
@@ -620,7 +658,7 @@ with _d3:
 # --------------------------------------------------------------------------
 with st.sidebar:
     st.markdown("### Shared setup")
-    st.caption("Sign in first. Create Film stays the same for every user.")
+    st.caption("Sign in first. Create Film and Screen count stay the same for every user.")
     st.markdown("### Plan the session — three designs")
     step_name = st.radio(
         "Review step",
@@ -631,8 +669,8 @@ with st.sidebar:
     key = FILE_BY_NAME[step_name]
     meta = STEP_BY_NAME[step_name]
     st.caption(meta["blurb"])
-    if step_name == CREATE_FILM_META["name"]:
-        st.caption("Shared step · not counted as one of the three designs.")
+    if step_name in (CREATE_FILM_META["name"], SCREEN_COUNT_META["name"]):
+        st.caption("Shared step · not counted as one of the three session designs.")
 
     with st.expander("What to look at", expanded=True):
         for q in meta["look"]:
@@ -703,7 +741,7 @@ elif key == "5-createfilm.html":
         st.markdown(
             '<div class="tgv-card">No titles published yet. As Admin or Creator, fill the form '
             "above and publish the first Vista titles. Everyone else will see them immediately "
-            "in both designs.</div>",
+            "in the screen count and all three designs.</div>",
             unsafe_allow_html=True,
         )
     else:
@@ -717,6 +755,9 @@ elif key == "5-createfilm.html":
                 f'{t.get("by", "Creator")}</span></div>',
                 unsafe_allow_html=True,
             )
+elif key == SCREEN_COUNT_META["file"]:
+    html = (VIEWS / key).read_text(encoding="utf-8")
+    fullscreen_embed(html, user, titles, height=900)
 else:
     html = (VIEWS / key).read_text(encoding="utf-8")
     fullscreen_embed(html, user, titles, height=820)
@@ -776,6 +817,12 @@ with right:
         "<li>Login happens before anything else.</li>"
         "<li>Create Film is the same starting point for everyone.</li>"
         "<li>Admin or Creator publishes the Vista titles once.</li>"
+        "</ul>"
+        "<h4 style='margin-top:12px'>Shared screen count — before the session</h4>"
+        "<ul>"
+        "<li>Film × cinema grid from MASTER PROGRAMMING 2026.</li>"
+        "<li>AI proposes 1 / 2 / FLEXI; PRINT COUNT and VARIANCE show the load.</li>"
+        "<li>No hall number or session time is assigned at this step.</li>"
         "</ul>"
         "<h4 style='margin-top:12px'>Three designs for planning the session</h4>"
         "<ul>"
